@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { ItineraryListItem } from './types';
+import { formatDMY } from './dates';
 
 const COLUMNS =
   'id,trip_id,title,location_name,start_time,end_time,notes,item_type,created_by,' +
@@ -54,6 +55,5 @@ export function formatItemTime(startISO: string | null, now: Date = new Date()):
   if (dayDiff === 0) return time;
   if (dayDiff === 1) return `Tomorrow, ${time}`;
   if (dayDiff === -1) return `Yesterday, ${time}`;
-  const date = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  return `${date}, ${time}`;
+  return `${formatDMY(d)}, ${time}`;
 }

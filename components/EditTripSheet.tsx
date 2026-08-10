@@ -4,15 +4,17 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
-import { isValidDateStr } from '../lib/trips';
+import { dmyToISO, isoToDMY, isValidDMY } from '../lib/dates';
 import type { Trip } from '../lib/types';
 import { TextField } from './TextField';
+import { DateField } from './DateField';
 import { Button } from './Button';
 import { colors, fonts, spacing } from '../lib/theme';
 
@@ -26,16 +28,16 @@ type Props = {
 export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
   const insets = useSafeAreaInsets();
   const [name, setName] = useState(trip.name);
-  const [start, setStart] = useState(trip.start_date ?? '');
-  const [end, setEnd] = useState(trip.end_date ?? '');
+  const [start, setStart] = useState(isoToDMY(trip.start_date));
+  const [end, setEnd] = useState(isoToDMY(trip.end_date));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (visible) {
       setName(trip.name);
-      setStart(trip.start_date ?? '');
-      setEnd(trip.end_date ?? '');
+      setStart(isoToDMY(trip.start_date));
+      setEnd(isoToDMY(trip.end_date));
       setError(null);
     }
   }, [visible, trip]);
@@ -46,22 +48,24 @@ export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
       setError('Give your trip a name.');
       return;
     }
-    if (start && !isValidDateStr(start)) {
-      setError('Start date must look like YYYY-MM-DD.');
+    if (start && !isValidDMY(start)) {
+      setError('Start date must be DD-MM-YYYY.');
       return;
     }
-    if (end && !isValidDateStr(end)) {
-      setError('End date must look like YYYY-MM-DD.');
+    if (end && !isValidDMY(end)) {
+      setError('End date must be DD-MM-YYYY.');
       return;
     }
-    if (start && end && end < start) {
+    const startISO = start ? dmyToISO(start) : null;
+    const endISO = end ? dmyToISO(end) : null;
+    if (startISO && endISO && endISO < startISO) {
       setError('End date can’t be before the start date.');
       return;
     }
     setSaving(true);
     const { data, error: updateError } = await supabase
       .from('trips')
-      .update({ name: name.trim(), start_date: start || null, end_date: end || null })
+      .update({ name: name.trim(), start_date: startISO, end_date: endISO })
       .eq('id', trip.id)
       .select('id,name,start_date,end_date,created_by,invite_code,created_at')
       .single();
@@ -81,40 +85,26 @@ export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
           <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
             <View style={styles.handle} />
-            <Text style={styles.title}>Edit trip</Text>
+            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+              <Text style={styles.title}>Edit trip</Text>
 
-            <TextField
-              label="Trip name"
-              value={name}
-              onChangeText={setName}
-              placeholder="Trip name"
-              autoCapitalize="words"
-            />
-            <TextField
-              label="Start date"
-              value={start}
-              onChangeText={setStart}
-              placeholder="YYYY-MM-DD"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="numbers-and-punctuation"
-            />
-            <TextField
-              label="End date"
-              value={end}
-              onChangeText={setEnd}
-              placeholder="YYYY-MM-DD"
-              autoCapitalize="none"
-              autoCorrect={false}
-              keyboardType="numbers-and-punctuation"
-            />
+              <TextField
+                label="Trip name"
+                value={name}
+                onChangeText={setName}
+                placeholder="Trip name"
+                autoCapitalize="words"
+              />
+              <DateField label="Start date" value={start} onChange={setStart} />
+              <DateField label="End date" value={end} onChange={setEnd} />
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+              {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            <View style={styles.actions}>
-              <Button label="Cancel" variant="secondary" onPress={onClose} style={styles.action} />
-              <Button label="Save" onPress={onSave} loading={saving} style={styles.action} />
-            </View>
+              <View style={styles.actions}>
+                <Button label="Cancel" variant="secondary" onPress={onClose} style={styles.action} />
+                <Button label="Save" onPress={onSave} loading={saving} style={styles.action} />
+              </View>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </View>
@@ -138,6 +128,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
+    maxHeight: '85%',
   },
   handle: {
     alignSelf: 'center',

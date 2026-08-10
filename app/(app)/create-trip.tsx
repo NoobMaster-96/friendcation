@@ -9,9 +9,11 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
-import { createTrip, isValidDateStr } from '../../lib/trips';
+import { createTrip } from '../../lib/trips';
+import { dmyToISO, isValidDMY } from '../../lib/dates';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { TextField } from '../../components/TextField';
+import { DateField } from '../../components/DateField';
 import { Button } from '../../components/Button';
 import { colors, fonts, spacing } from '../../lib/theme';
 
@@ -31,15 +33,17 @@ export default function CreateTrip() {
       setError('Give your trip a name.');
       return;
     }
-    if (start && !isValidDateStr(start)) {
-      setError('Start date must look like YYYY-MM-DD.');
+    if (start && !isValidDMY(start)) {
+      setError('Start date must be DD-MM-YYYY.');
       return;
     }
-    if (end && !isValidDateStr(end)) {
-      setError('End date must look like YYYY-MM-DD.');
+    if (end && !isValidDMY(end)) {
+      setError('End date must be DD-MM-YYYY.');
       return;
     }
-    if (start && end && end < start) {
+    const startISO = start ? dmyToISO(start) : null;
+    const endISO = end ? dmyToISO(end) : null;
+    if (startISO && endISO && endISO < startISO) {
       setError('End date can’t be before the start date.');
       return;
     }
@@ -49,7 +53,7 @@ export default function CreateTrip() {
     }
     setLoading(true);
     try {
-      await createTrip(user.id, name, start || null, end || null);
+      await createTrip(user.id, name, startISO, endISO);
       router.back();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not create the trip.');
@@ -76,24 +80,8 @@ export default function CreateTrip() {
             placeholder="Amsterdam + Porto"
             autoCapitalize="words"
           />
-          <TextField
-            label="Start date (optional)"
-            value={start}
-            onChangeText={setStart}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="numbers-and-punctuation"
-          />
-          <TextField
-            label="End date (optional)"
-            value={end}
-            onChangeText={setEnd}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="numbers-and-punctuation"
-          />
+          <DateField label="Start date (optional)" value={start} onChange={setStart} />
+          <DateField label="End date (optional)" value={end} onChange={setEnd} />
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
