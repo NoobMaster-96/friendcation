@@ -1,6 +1,5 @@
 import { supabase } from './supabase';
 import type { Trip, TripListItem } from './types';
-import { isoToDMY } from './dates';
 
 const TRIP_COLUMNS = 'id,name,start_date,end_date,created_by,invite_code,created_at';
 
@@ -116,9 +115,26 @@ function parseLocalDate(d: string): Date {
 }
 
 export function formatDateRange(start: string | null, end: string | null): string {
-  if (start && end) return `${isoToDMY(start)} – ${isoToDMY(end)}`;
-  if (start) return `From ${isoToDMY(start)}`;
-  if (end) return `Until ${isoToDMY(end)}`;
+  const currentYear = new Date().getFullYear();
+  const fmt = (d: string) =>
+    parseLocalDate(d).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  const yearOf = (d: string) => parseLocalDate(d).getFullYear();
+
+  if (start && end) {
+    const base = `${fmt(start)} – ${fmt(end)}`;
+    // Show a year only when the trip doesn't touch the current year.
+    return yearOf(start) !== currentYear && yearOf(end) !== currentYear
+      ? `${base} · ${yearOf(end)}`
+      : base;
+  }
+  if (start) {
+    const base = `From ${fmt(start)}`;
+    return yearOf(start) !== currentYear ? `${base} · ${yearOf(start)}` : base;
+  }
+  if (end) {
+    const base = `Until ${fmt(end)}`;
+    return yearOf(end) !== currentYear ? `${base} · ${yearOf(end)}` : base;
+  }
   return 'Dates TBD';
 }
 
