@@ -18,6 +18,8 @@ import { formatDateRange } from '../../../lib/trips';
 import type { Trip } from '../../../lib/types';
 import { useAuth } from '../../../context/AuthContext';
 import { ScreenHeader } from '../../../components/ScreenHeader';
+import { ProfileMenu } from '../../../components/ProfileMenu';
+import { EditTripSheet } from '../../../components/EditTripSheet';
 import { ItineraryTab } from '../../../components/trip/ItineraryTab';
 import { LocationTab } from '../../../components/trip/LocationTab';
 import { ExpensesTab } from '../../../components/trip/ExpensesTab';
@@ -38,6 +40,7 @@ export default function TripDetail() {
   const [loadingTrip, setLoadingTrip] = useState(true);
   const [active, setActive] = useState(0);
   const [pagerH, setPagerH] = useState(0);
+  const [editVisible, setEditVisible] = useState(false);
 
   const scrollX = useRef(new Animated.Value(0)).current;
   const pagerRef = useRef<any>(null);
@@ -101,6 +104,8 @@ export default function TripDetail() {
         title={trip?.name ?? 'Trip'}
         subtitle={trip ? formatDateRange(trip.start_date, trip.end_date) : undefined}
         onBack={() => router.back()}
+        right={<ProfileMenu />}
+        onEdit={trip ? () => setEditVisible(true) : undefined}
       />
 
       <View style={styles.tabBar}>
@@ -167,6 +172,15 @@ export default function TripDetail() {
         >
           <Ionicons name="add" size={28} color={colors.buttonText} />
         </Pressable>
+      ) : null}
+
+      {trip ? (
+        <EditTripSheet
+          trip={trip}
+          visible={editVisible}
+          onClose={() => setEditVisible(false)}
+          onSaved={(t) => setTrip(t)}
+        />
       ) : null}
     </View>
   );
