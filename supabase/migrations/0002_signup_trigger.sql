@@ -19,20 +19,25 @@
 -- as auth metadata on supabase.auth.signUp(). No manual user_profiles insert.
 -- ============================================================
 
-create or replace function handle_new_user_signup()
+-- SECURITY DEFINER runs with the owner's rights but the CALLER's search_path.
+-- supabase_auth_admin (which fires this trigger on signup) doesn't include
+-- public, so we lock search_path to '' and schema-qualify every table below —
+-- otherwise the insert fails with "Database error saving new user".
+create or replace function public.handle_new_user_signup()
 returns trigger
 language plpgsql
 security definer
+set search_path = ''
 as $$
 declare
   referrer_id uuid;
   existing_count int;
 begin
-  select count(*) into existing_count from user_profiles;
+  select count(*) into existing_count from public.user_profiles;
 
   -- bootstrap case: no users exist yet, this signup becomes the root
   if existing_count = 0 then
-    insert into user_profiles (id, first_name, last_name, email)
+    insert into public.user_profiles (id, first_name, last_name, email)
     values (
       new.id,
       new.raw_user_meta_data->>'first_name',
@@ -43,14 +48,14 @@ begin
   end if;
 
   select id into referrer_id
-  from user_profiles
+  from public.user_profiles
   where referral_code = upper(new.raw_user_meta_data->>'referral_code');
 
   if referrer_id is null then
     raise exception 'Invalid or missing referral code';
   end if;
 
-  insert into user_profiles (id, first_name, last_name, email, referred_by)
+  insert into public.user_profiles (id, first_name, last_name, email, referred_by)
   values (
     new.id,
     new.raw_user_meta_data->>'first_name',
@@ -67,4 +72,4 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row
-  execute function handle_new_user_signup();
+  execute function public.handle_new_user_signup();
