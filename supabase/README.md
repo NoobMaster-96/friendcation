@@ -13,6 +13,7 @@ Run these against your Supabase project **in order**:
 | `migrations/0002_signup_trigger.sql` | Referral-based signup trigger on `auth.users` | Always |
 | `migrations/0003_storage.sql` | Private `itinerary-attachments` storage bucket | Always |
 | `migrations/0004_rls_and_storage_policies.sql` | **Row Level Security** — table + storage policies | **Before any real user** |
+| `migrations/0005_email_available.sql` | `email_available()` RPC — pre-signup email check (SECURITY DEFINER, RLS-safe) | Always |
 
 ### How to apply
 
