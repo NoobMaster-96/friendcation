@@ -17,11 +17,11 @@ import { formatItemTime, isNowItem, listItinerary } from '../../lib/itinerary';
 import type { ItineraryListItem } from '../../lib/types';
 import { colors, fonts, spacing } from '../../lib/theme';
 
-type Filter = 'mine' | 'shared';
+type Filter = 'mine' | 'all';
 
 export function ItineraryTab({ tripId, userId }: { tripId: string; userId: string }) {
   const [items, setItems] = useState<ItineraryListItem[]>([]);
-  const [filter, setFilter] = useState<Filter>('mine');
+  const [filter, setFilter] = useState<Filter>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,8 +50,8 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
 
   const now = new Date();
   const visible =
-    filter === 'shared'
-      ? items.filter((it) => it.item_type === 'shared')
+    filter === 'all'
+      ? items
       : items.filter((it) => it.item_type === 'shared' || it.created_by === userId);
 
   const nowIds = new Set(visible.filter((it) => isNowItem(it, now)).map((it) => it.id));
@@ -105,7 +105,7 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
           onChange={setFilter}
           options={[
             { label: 'Mine', value: 'mine' },
-            { label: 'Shared', value: 'shared' },
+            { label: 'All', value: 'all' },
           ]}
         />
       </View>
