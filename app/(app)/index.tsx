@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { SegmentedToggle } from '../../components/SegmentedToggle';
-import { CircleButton } from '../../components/CircleButton';
+import { ProfileMenu } from '../../components/ProfileMenu';
 import { AvatarStack } from '../../components/AvatarStack';
 import {
   listMyTrips,
@@ -70,13 +70,7 @@ export default function TripList() {
       <ScreenHeader
         title="Friendcation"
         subtitle="Your travel diaries"
-        right={
-          <CircleButton
-            icon="ellipsis-horizontal"
-            accessibilityLabel="Account"
-            onPress={() => router.push('/profile')}
-          />
-        }
+        right={<ProfileMenu />}
       />
 
       <View style={styles.toggleWrap}>
