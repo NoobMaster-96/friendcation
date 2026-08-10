@@ -1,29 +1,31 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { type ReactNode } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CircleButton } from './CircleButton';
 import { colors, fonts, spacing } from '../lib/theme';
 
 type Props = {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  right?: ReactNode;
 };
 
-export function ScreenHeader({ title, subtitle, onBack }: Props) {
+export function ScreenHeader({ title, subtitle, onBack, right }: Props) {
   const insets = useSafeAreaInsets();
+  const hasTopRow = !!onBack || !!right;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + spacing.sm }]}>
-      {onBack ? (
-        <Pressable
-          onPress={onBack}
-          hitSlop={10}
-          accessibilityRole="button"
-          accessibilityLabel="Back"
-          style={({ pressed }) => [styles.backCircle, pressed && styles.backPressed]}
-        >
-          <Ionicons name="chevron-back" size={22} color={colors.text} />
-        </Pressable>
+      {hasTopRow ? (
+        <View style={styles.topRow}>
+          <View style={styles.slotLeft}>
+            {onBack ? (
+              <CircleButton icon="chevron-back" onPress={onBack} accessibilityLabel="Back" />
+            ) : null}
+          </View>
+          <View style={styles.slotRight}>{right ?? null}</View>
+        </View>
       ) : (
         <View style={styles.topSpacer} />
       )}
@@ -41,19 +43,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  backCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
+  topRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: -2,
+    justifyContent: 'space-between',
+    minHeight: 44,
     marginBottom: spacing.sm,
   },
-  backPressed: { opacity: 0.6 },
+  slotLeft: { alignItems: 'flex-start', justifyContent: 'center' },
+  slotRight: { alignItems: 'flex-end', justifyContent: 'center' },
   topSpacer: { height: spacing.xs },
   title: {
     fontSize: 34,

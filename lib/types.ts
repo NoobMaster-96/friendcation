@@ -8,3 +8,21 @@ export type UserProfile = {
   referred_by: string | null;
   created_at: string;
 };
+
+export type Trip = {
+  id: string;
+  name: string;
+  start_date: string | null;
+  end_date: string | null;
+  created_by: string | null;
+  invite_code: string | null;
+  created_at: string;
+};
+
+export type TripMemberChip = { id: string; initial: string };
+
+export type TripListItem = Trip & {
+  role: string;
+  members: TripMemberChip[];
+  memberCount: number;
+};
