@@ -95,12 +95,19 @@ export default function Register() {
     setLoading(false);
 
     if (signUpError) {
-      // The signup trigger raises for an invalid/missing invite code; GoTrue
-      // surfaces that as a generic "Database error saving new user".
-      if (/database error/i.test(signUpError.message)) {
-        setError('Couldn’t create your account — double-check your invite code.');
+      const msg = signUpError.message ?? '';
+      const status = (signUpError as { status?: number }).status;
+      // A 500 here means the database signup trigger raised (bad invite code,
+      // or the trigger isn't installed) — GoTrue returns a generic failure.
+      if (status === 500 || /database error|internal server/i.test(msg)) {
+        setError(
+          'Couldn’t create your account. Check your invite code — if it keeps ' +
+            'failing, the signup trigger may need to be applied in Supabase.'
+        );
+      } else if (/already registered|already exists|user.*exist/i.test(msg)) {
+        setError('That email is already registered — try logging in instead.');
       } else {
-        setError(signUpError.message);
+        setError(msg || 'Something went wrong. Please try again.');
       }
       return;
     }
