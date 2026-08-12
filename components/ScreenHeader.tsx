@@ -46,7 +46,7 @@ export function ScreenHeader({ title, subtitle, onBack, right, onEdit }: Props) 
               accessibilityLabel="Edit trip"
               style={({ pressed }) => [styles.edit, pressed && { opacity: 0.5 }]}
             >
-              <Ionicons name="pencil" size={15} color={colors.textSecondary} />
+              <Ionicons name="create-outline" size={16} color={colors.textSecondary} />
             </Pressable>
           ) : null}
         </View>
