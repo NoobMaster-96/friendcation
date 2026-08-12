@@ -8,6 +8,8 @@ export default function AppLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
+        animation: 'fade',
+        animationDuration: 180,
         contentStyle: { backgroundColor: colors.background },
       }}
     />
