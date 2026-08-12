@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   Keyboard,
+  Modal,
   Platform,
   Pressable,
   StyleSheet,
@@ -9,9 +10,10 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { formatDMY, parseDMYtoDate } from '../lib/dates';
-import { colors, fonts, radius } from '../lib/theme';
+import { colors, fonts, radius, spacing } from '../lib/theme';
 
 type Props = {
   label: string;
@@ -30,6 +32,7 @@ export function DateField({
   placeholder = 'DD-MM-YYYY',
   minimumDate,
 }: Props) {
+  const insets = useSafeAreaInsets();
   const [show, setShow] = useState(false);
   const [focused, setFocused] = useState(false);
 
@@ -77,23 +80,27 @@ export function DateField({
       </View>
       {error ? <Text style={styles.error}>{error}</Text> : null}
 
-      {show && Platform.OS === 'ios' ? (
-        <View style={styles.iosPicker}>
-          <DateTimePicker
-            value={initial}
-            mode="date"
-            display="inline"
-            minimumDate={minimumDate}
-            onChange={onPick}
-          />
-          <Pressable
-            onPress={() => setShow(false)}
-            style={styles.doneBtn}
-            accessibilityRole="button"
-          >
-            <Text style={styles.doneText}>Done</Text>
-          </Pressable>
-        </View>
+      {Platform.OS === 'ios' ? (
+        <Modal visible={show} transparent animationType="slide" onRequestClose={() => setShow(false)}>
+          <View style={styles.pickerRoot}>
+            <Pressable style={styles.pickerBackdrop} onPress={() => setShow(false)} />
+            <View style={[styles.pickerSheet, { paddingBottom: insets.bottom + 12 }]}>
+              <View style={styles.pickerHeader}>
+                <Text style={styles.pickerTitle}>{label}</Text>
+                <Pressable onPress={() => setShow(false)} hitSlop={8} accessibilityRole="button">
+                  <Text style={styles.doneText}>Done</Text>
+                </Pressable>
+              </View>
+              <DateTimePicker
+                value={initial}
+                mode="date"
+                display="inline"
+                minimumDate={minimumDate}
+                onChange={onPick}
+              />
+            </View>
+          </View>
+        </Modal>
       ) : null}
       {show && Platform.OS === 'android' ? (
         <DateTimePicker
@@ -126,12 +133,28 @@ const styles = StyleSheet.create({
   input: { flex: 1, fontSize: 17, fontFamily: fonts.regular, color: colors.text, paddingVertical: 0 },
   iconBtn: { paddingLeft: 8 },
   error: { marginTop: 6, fontSize: 13, fontFamily: fonts.regular, color: colors.danger },
-  iosPicker: {
-    marginTop: 8,
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-    padding: 8,
+  pickerRoot: { flex: 1, justifyContent: 'flex-end' },
+  pickerBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(43,36,29,0.35)',
   },
-  doneBtn: { alignSelf: 'flex-end', paddingHorizontal: 12, paddingVertical: 8 },
+  pickerSheet: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.sm,
+  },
+  pickerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
+  },
+  pickerTitle: { fontSize: 16, fontFamily: fonts.semibold, color: colors.text },
   doneText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.text },
 });

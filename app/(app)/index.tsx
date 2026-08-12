@@ -16,6 +16,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { SegmentedToggle } from '../../components/SegmentedToggle';
 import { ProfileMenu } from '../../components/ProfileMenu';
 import { AvatarStack } from '../../components/AvatarStack';
+import { NewTripSheet } from '../../components/NewTripSheet';
 import {
   listMyTrips,
   partitionTrips,
@@ -37,6 +38,7 @@ export default function TripList() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [newTripVisible, setNewTripVisible] = useState(false);
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -120,7 +122,7 @@ export default function TripList() {
 
       {tab === 'upcoming' ? (
         <Pressable
-          onPress={() => router.push('/create-trip')}
+          onPress={() => setNewTripVisible(true)}
           accessibilityRole="button"
           accessibilityLabel="Create a trip"
           style={({ pressed }) => [
@@ -132,6 +134,15 @@ export default function TripList() {
           <Ionicons name="add" size={28} color={colors.buttonText} />
         </Pressable>
       ) : null}
+
+      <NewTripSheet
+        visible={newTripVisible}
+        onClose={() => setNewTripVisible(false)}
+        onCreated={() => {
+          setTab('upcoming');
+          load();
+        }}
+      />
     </View>
   );
 }
