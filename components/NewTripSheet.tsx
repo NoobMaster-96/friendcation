@@ -4,7 +4,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -80,50 +79,49 @@ export function NewTripSheet({ visible, onClose, onCreated }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.root}>
+      <KeyboardAvoidingView
+        style={styles.root}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <Pressable style={styles.backdrop} onPress={onClose} />
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
-            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-              <Text style={styles.title}>New travel diary</Text>
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
+          <Text style={styles.title}>New travel diary</Text>
 
-              <TextField
-                label="Trip name"
-                value={name}
-                onChangeText={setName}
-                placeholder="e.g. Kerala Backwaters"
-                autoCapitalize="words"
+          <TextField
+            label="Trip name"
+            value={name}
+            onChangeText={setName}
+            placeholder="e.g. Kerala Backwaters"
+            autoCapitalize="words"
+          />
+
+          <View style={styles.dateRow}>
+            <View style={styles.dateCol}>
+              <DateField
+                label="Start date"
+                value={start}
+                onChange={setStart}
+                placeholder="Select date"
               />
-
-              <View style={styles.dateRow}>
-                <View style={styles.dateCol}>
-                  <DateField
-                    label="Start date"
-                    value={start}
-                    onChange={setStart}
-                    placeholder="Select date"
-                  />
-                </View>
-                <View style={styles.dateCol}>
-                  <DateField
-                    label="End date"
-                    value={end}
-                    onChange={setEnd}
-                    placeholder="Select date"
-                  />
-                </View>
-              </View>
-
-              {error ? <Text style={styles.error}>{error}</Text> : null}
-
-              <View style={styles.actions}>
-                <Button label="Cancel" variant="secondary" onPress={onClose} style={styles.action} />
-                <Button label="Create trip" onPress={onCreate} loading={saving} style={styles.action} />
-              </View>
-            </ScrollView>
+            </View>
+            <View style={styles.dateCol}>
+              <DateField
+                label="End date"
+                value={end}
+                onChange={setEnd}
+                placeholder="Select date"
+              />
+            </View>
           </View>
-        </KeyboardAvoidingView>
-      </View>
+
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <View style={styles.actions}>
+            <Button label="Cancel" variant="secondary" onPress={onClose} style={styles.action} />
+            <Button label="Create trip" onPress={onCreate} loading={saving} style={styles.action} />
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

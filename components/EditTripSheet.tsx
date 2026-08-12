@@ -4,7 +4,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -89,54 +88,53 @@ export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <View style={styles.root}>
+      <KeyboardAvoidingView
+        style={styles.root}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <Pressable style={styles.backdrop} onPress={onClose} />
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
-            <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-              <Text style={styles.title}>Edit trip</Text>
+        <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
+          <Text style={styles.title}>Edit trip</Text>
 
-              <TextField
-                label="Trip name"
-                value={name}
-                onChangeText={setName}
-                placeholder="Trip name"
-                autoCapitalize="words"
-              />
+          <TextField
+            label="Trip name"
+            value={name}
+            onChangeText={setName}
+            placeholder="Trip name"
+            autoCapitalize="words"
+          />
 
-              <Text style={styles.datesLabel}>Dates</Text>
-              <Pressable
-                onPress={() => setDatesOpen((o) => !o)}
-                accessibilityRole="button"
-                style={({ pressed }) => [
-                  styles.summaryField,
-                  datesOpen && styles.summaryFieldActive,
-                  pressed && { opacity: 0.9 },
-                ]}
-              >
-                <Text style={[styles.summaryText, !hasDates && styles.summaryPlaceholder]}>
-                  {summary}
-                </Text>
-                <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
-              </Pressable>
+          <Text style={styles.datesLabel}>Dates</Text>
+          <Pressable
+            onPress={() => setDatesOpen((o) => !o)}
+            accessibilityRole="button"
+            style={({ pressed }) => [
+              styles.summaryField,
+              datesOpen && styles.summaryFieldActive,
+              pressed && { opacity: 0.9 },
+            ]}
+          >
+            <Text style={[styles.summaryText, !hasDates && styles.summaryPlaceholder]}>
+              {summary}
+            </Text>
+            <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
+          </Pressable>
 
-              {datesOpen ? (
-                <>
-                  <DateField label="Start date" value={start} onChange={setStart} />
-                  <DateField label="End date" value={end} onChange={setEnd} />
-                </>
-              ) : null}
+          {datesOpen ? (
+            <>
+              <DateField label="Start date" value={start} onChange={setStart} />
+              <DateField label="End date" value={end} onChange={setEnd} />
+            </>
+          ) : null}
 
-              {error ? <Text style={styles.error}>{error}</Text> : null}
+          {error ? <Text style={styles.error}>{error}</Text> : null}
 
-              <View style={styles.actions}>
-                <Button label="Cancel" variant="secondary" onPress={onClose} style={styles.action} />
-                <Button label="Save" onPress={onSave} loading={saving} style={styles.action} />
-              </View>
-            </ScrollView>
+          <View style={styles.actions}>
+            <Button label="Cancel" variant="secondary" onPress={onClose} style={styles.action} />
+            <Button label="Save" onPress={onSave} loading={saving} style={styles.action} />
           </View>
-        </KeyboardAvoidingView>
-      </View>
+        </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
