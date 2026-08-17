@@ -51,8 +51,7 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
   }, [visible, itemId]);
 
   return (
-    <>
-      <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.root}>
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
@@ -115,13 +114,12 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
 
           <Button label="Close" variant="secondary" onPress={onClose} style={styles.close} />
         </View>
+        <AttachmentViewer
+          attachment={viewerAttachment}
+          onClose={() => setViewerAttachment(null)}
+        />
       </View>
     </Modal>
-      <AttachmentViewer
-        attachment={viewerAttachment}
-        onClose={() => setViewerAttachment(null)}
-      />
-    </>
   );
 }
 

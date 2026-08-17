@@ -1,13 +1,11 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Dimensions,
   Image,
   Linking,
   Modal,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -24,14 +22,13 @@ type Props = {
   onClose: () => void;
 };
 
-const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
-
 /** Full-screen in-app viewer: native Image for photos, WebView for PDFs. */
 export function AttachmentViewer({ attachment, onClose }: Props) {
   const insets = useSafeAreaInsets();
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imgLoading, setImgLoading] = useState(false);
 
   useEffect(() => {
     if (!attachment) {
@@ -98,17 +95,24 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
           ) : error ? (
             <Text style={styles.error}>{error}</Text>
           ) : url && isImage ? (
-            <ScrollView
-              style={styles.fill}
-              contentContainerStyle={styles.imageWrap}
-              maximumZoomScale={4}
-              minimumZoomScale={1}
-              centerContent
-              showsVerticalScrollIndicator={false}
-              showsHorizontalScrollIndicator={false}
-            >
-              <Image source={{ uri: url }} style={styles.image} resizeMode="contain" />
-            </ScrollView>
+            <View style={styles.fill}>
+              <Image
+                source={{ uri: url }}
+                style={styles.image}
+                resizeMode="contain"
+                onLoadStart={() => setImgLoading(true)}
+                onLoad={() => setImgLoading(false)}
+                onError={() => {
+                  setImgLoading(false);
+                  setError('This image could not be displayed.');
+                }}
+              />
+              {imgLoading ? (
+                <View style={styles.webLoading}>
+                  <ActivityIndicator color="#fff" />
+                </View>
+              ) : null}
+            </View>
           ) : pdfSource ? (
             <WebView
               source={pdfSource}
@@ -142,8 +146,7 @@ const styles = StyleSheet.create({
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   body: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   fill: { flex: 1, width: '100%', backgroundColor: '#0e0b07' },
-  imageWrap: { flexGrow: 1, alignItems: 'center', justifyContent: 'center' },
-  image: { width: SCREEN_W, height: SCREEN_H * 0.8 },
+  image: { flex: 1, width: '100%' },
   webLoading: {
     position: 'absolute',
     top: 0,
