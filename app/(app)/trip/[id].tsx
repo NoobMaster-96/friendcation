@@ -18,7 +18,7 @@ import { formatDateRange } from '../../../lib/trips';
 import type { Trip } from '../../../lib/types';
 import { useAuth } from '../../../context/AuthContext';
 import { ScreenHeader } from '../../../components/ScreenHeader';
-import { ProfileMenu } from '../../../components/ProfileMenu';
+import { CircleButton } from '../../../components/CircleButton';
 import { EditTripSheet } from '../../../components/EditTripSheet';
 import { ItineraryTab } from '../../../components/trip/ItineraryTab';
 import { LocationTab } from '../../../components/trip/LocationTab';
@@ -104,7 +104,15 @@ export default function TripDetail() {
         title={trip?.name ?? 'Trip'}
         subtitle={trip ? formatDateRange(trip.start_date, trip.end_date) : undefined}
         onBack={() => router.back()}
-        right={<ProfileMenu />}
+        right={
+          <CircleButton
+            icon="settings-outline"
+            accessibilityLabel="Group settings"
+            onPress={() =>
+              router.push({ pathname: '/trip-settings', params: { id: tripId } })
+            }
+          />
+        }
         onEdit={trip ? () => setEditVisible(true) : undefined}
       />
 
