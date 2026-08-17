@@ -8,16 +8,14 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 import { dmyToISO, isoToDMY, isValidDMY } from '../lib/dates';
-import { formatDateRange } from '../lib/trips';
 import type { Trip } from '../lib/types';
 import { TextField } from './TextField';
 import { DateField } from './DateField';
 import { Button } from './Button';
-import { colors, fonts, radius, spacing } from '../lib/theme';
+import { colors, fonts, spacing } from '../lib/theme';
 
 type Props = {
   trip: Trip;
@@ -33,7 +31,6 @@ export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
   const [end, setEnd] = useState(isoToDMY(trip.end_date));
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [datesOpen, setDatesOpen] = useState(false);
 
   useEffect(() => {
     if (visible) {
@@ -41,14 +38,13 @@ export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
       setStart(isoToDMY(trip.start_date));
       setEnd(isoToDMY(trip.end_date));
       setError(null);
-      setDatesOpen(false);
     }
   }, [visible, trip]);
 
   const onSave = async () => {
     setError(null);
     if (!name.trim()) {
-      setError('Give your trip a name.');
+      setError('Give your travel diary a name.');
       return;
     }
     if (start && !isValidDMY(start)) {
@@ -81,11 +77,6 @@ export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
     onClose();
   };
 
-  const previewStartISO = start ? dmyToISO(start) : null;
-  const previewEndISO = end ? dmyToISO(end) : null;
-  const hasDates = !!(previewStartISO || previewEndISO);
-  const summary = hasDates ? formatDateRange(previewStartISO, previewEndISO) : 'Add dates';
-
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <KeyboardAvoidingView
@@ -94,38 +85,24 @@ export function EditTripSheet({ trip, visible, onClose, onSaved }: Props) {
       >
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
-          <Text style={styles.title}>Edit trip</Text>
+          <Text style={styles.title}>Edit travel diary</Text>
 
           <TextField
-            label="Trip name"
+            label="Travel diary name"
             value={name}
             onChangeText={setName}
-            placeholder="Trip name"
+            placeholder="Travel diary name"
             autoCapitalize="words"
           />
 
-          <Text style={styles.datesLabel}>Dates</Text>
-          <Pressable
-            onPress={() => setDatesOpen((o) => !o)}
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.summaryField,
-              datesOpen && styles.summaryFieldActive,
-              pressed && { opacity: 0.9 },
-            ]}
-          >
-            <Text style={[styles.summaryText, !hasDates && styles.summaryPlaceholder]}>
-              {summary}
-            </Text>
-            <Ionicons name="calendar-outline" size={18} color={colors.textSecondary} />
-          </Pressable>
-
-          {datesOpen ? (
-            <>
+          <View style={styles.dateRow}>
+            <View style={styles.dateCol}>
               <DateField label="Start date" value={start} onChange={setStart} />
+            </View>
+            <View style={styles.dateCol}>
               <DateField label="End date" value={end} onChange={setEnd} />
-            </>
-          ) : null}
+            </View>
+          </View>
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -158,22 +135,8 @@ const styles = StyleSheet.create({
     maxHeight: '85%',
   },
   title: { fontSize: 20, fontFamily: fonts.bold, color: colors.text, marginBottom: spacing.lg },
-  datesLabel: { fontSize: 15, fontFamily: fonts.medium, color: colors.text, marginBottom: 8 },
-  summaryField: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    height: 56,
-    borderRadius: radius.input,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-  },
-  summaryFieldActive: { borderColor: colors.borderStrong },
-  summaryText: { fontSize: 17, fontFamily: fonts.regular, color: colors.text },
-  summaryPlaceholder: { color: colors.textMuted },
+  dateRow: { flexDirection: 'row', gap: spacing.md },
+  dateCol: { flex: 1 },
   error: { marginBottom: spacing.sm, fontSize: 13, fontFamily: fonts.regular, color: colors.danger },
   actions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.sm },
   action: { flex: 1 },
