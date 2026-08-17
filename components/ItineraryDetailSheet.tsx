@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
-  Linking,
   Modal,
   Pressable,
   ScrollView,
@@ -11,12 +9,12 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { formatItemTime, getAttachmentUrl, getItineraryItemDetail } from '../lib/itinerary';
+import { formatItemTime, getItineraryItemDetail } from '../lib/itinerary';
 import type { ItineraryAttachment, ItineraryItemDetail } from '../lib/types';
 import type { TripMember } from '../lib/members';
 import { MemberChips } from './MemberChips';
+import { AttachmentViewer } from './AttachmentViewer';
 import { Button } from './Button';
 import { colors, fonts, spacing } from '../lib/theme';
 
@@ -32,7 +30,7 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
   const insets = useSafeAreaInsets();
   const [detail, setDetail] = useState<ItineraryItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [openingId, setOpeningId] = useState<string | null>(null);
+  const [viewerAttachment, setViewerAttachment] = useState<ItineraryAttachment | null>(null);
 
   useEffect(() => {
     if (!visible || !itemId) return;
@@ -52,29 +50,9 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
     };
   }, [visible, itemId]);
 
-  const openAttachment = async (a: ItineraryAttachment) => {
-    if (openingId) return;
-    setOpeningId(a.id);
-    try {
-      const url = await getAttachmentUrl(a.filePath);
-      if (!url) {
-        Alert.alert('Could not open file', 'The file link could not be generated. Please try again.');
-        return;
-      }
-      try {
-        await WebBrowser.openBrowserAsync(url);
-      } catch {
-        await Linking.openURL(url);
-      }
-    } catch (e) {
-      Alert.alert('Could not open file', e instanceof Error ? e.message : 'Please try again.');
-    } finally {
-      setOpeningId(null);
-    }
-  };
-
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <>
+      <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={styles.root}>
         <Pressable style={styles.backdrop} onPress={onClose} />
         <View style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}>
@@ -115,8 +93,7 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
                   {detail.attachments.map((a) => (
                     <Pressable
                       key={a.id}
-                      onPress={() => openAttachment(a)}
-                      disabled={openingId !== null}
+                      onPress={() => setViewerAttachment(a)}
                       accessibilityRole="button"
                       style={({ pressed }) => [styles.pill, pressed && styles.pressed]}
                     >
@@ -128,11 +105,7 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
                       <Text style={styles.pillName} numberOfLines={1}>
                         {a.fileName}
                       </Text>
-                      {openingId === a.id ? (
-                        <ActivityIndicator size="small" color={colors.textSecondary} />
-                      ) : (
-                        <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
-                      )}
+                      <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
                     </Pressable>
                   ))}
                 </>
@@ -144,6 +117,11 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
         </View>
       </View>
     </Modal>
+      <AttachmentViewer
+        attachment={viewerAttachment}
+        onClose={() => setViewerAttachment(null)}
+      />
+    </>
   );
 }
 
