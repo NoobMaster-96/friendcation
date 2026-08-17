@@ -171,7 +171,7 @@ export function ItineraryItemSheet({
       return;
     }
 
-    let attachmentFailed = false;
+    let attachmentError: string | null = null;
     try {
       for (const id of removedIds) {
         const att = existing.find((a) => a.id === id);
@@ -180,15 +180,15 @@ export function ItineraryItemSheet({
       for (const file of pending) {
         await uploadAttachment(tripId, itemId, file, userId);
       }
-    } catch {
-      attachmentFailed = true;
+    } catch (e) {
+      attachmentError = e instanceof Error ? e.message : 'Unknown error.';
     }
 
     setSaving(false);
     onSaved();
     onClose();
-    if (attachmentFailed) {
-      Alert.alert('Item saved', 'But some attachments didn’t sync. Try again from Edit.');
+    if (attachmentError) {
+      Alert.alert('Item saved', `But attachments didn’t sync: ${attachmentError}`);
     }
   };
 

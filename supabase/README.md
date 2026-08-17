@@ -12,9 +12,10 @@ Run these against your Supabase project **in order**:
 | `migrations/0001_schema.sql` | 9 core tables | Always |
 | `migrations/0002_signup_trigger.sql` | Referral-based signup trigger on `auth.users` | Always |
 | `migrations/0003_storage.sql` | Private `itinerary-attachments` storage bucket | Always |
-| `migrations/0004_rls_and_storage_policies.sql` | **Row Level Security** — table + storage policies | **Before any real user** |
+| `migrations/0004_rls_and_storage_policies.sql` | **Row Level Security** — public-table policies (storage policies moved to 0007) | **Before any real user** |
 | `migrations/0005_email_available.sql` | `email_available()` RPC — pre-signup email check (SECURITY DEFINER, RLS-safe) | Always |
 | `migrations/0006_itinerary_item_participants.sql` | `itinerary_item_participants` join table (the "People" on an itinerary item) | Always |
+| `migrations/0007_itinerary_attachments_storage.sql` | `storage.objects` read/insert/delete policies for the attachments bucket | **Always** (attachment upload fails without it) |
 
 ### How to apply
 

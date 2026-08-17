@@ -268,29 +268,7 @@ create policy "either party can record a settlement"
   on settlements for insert
   with check (auth.uid() = paid_by or auth.uid() = paid_to);
 
--- ============================================================
--- STORAGE OBJECT POLICIES (bucket: itinerary-attachments)
--- Path convention {trip_id}/{itinerary_item_id}/{filename};
--- (storage.foldername(name))[1] is the trip_id segment.
--- ============================================================
-create policy "trip members can read storage objects for their trips"
-  on storage.objects for select
-  using (
-    bucket_id = 'itinerary-attachments'
-    and exists (
-      select 1 from trip_members tm
-      where tm.trip_id::text = (storage.foldername(name))[1]
-      and tm.user_id = auth.uid()
-    )
-  );
-
-create policy "trip members can upload storage objects for their trips"
-  on storage.objects for insert
-  with check (
-    bucket_id = 'itinerary-attachments'
-    and exists (
-      select 1 from trip_members tm
-      where tm.trip_id::text = (storage.foldername(name))[1]
-      and tm.user_id = auth.uid()
-    )
-  );
+-- Storage object policies for the itinerary-attachments bucket now live in
+-- 0007_itinerary_attachments_storage.sql (bucket + read/insert/delete). They are
+-- split out so attachment upload works in dev without enabling RLS on the public
+-- tables above (which stays gated behind this file).
