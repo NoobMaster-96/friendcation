@@ -14,6 +14,7 @@ Run these against your Supabase project **in order**:
 | `migrations/0003_storage.sql` | Private `itinerary-attachments` storage bucket | Always |
 | `migrations/0004_rls_and_storage_policies.sql` | **Row Level Security** — table + storage policies | **Before any real user** |
 | `migrations/0005_email_available.sql` | `email_available()` RPC — pre-signup email check (SECURITY DEFINER, RLS-safe) | Always |
+| `migrations/0006_itinerary_item_participants.sql` | `itinerary_item_participants` join table (the "People" on an itinerary item) | Always |
 
 ### How to apply
 

@@ -12,18 +12,30 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SegmentedToggle } from '../SegmentedToggle';
+import { ItineraryItemSheet } from '../ItineraryItemSheet';
+import { ItineraryDetailSheet } from '../ItineraryDetailSheet';
 import { formatItemTime, isNowItem, listItinerary } from '../../lib/itinerary';
-import type { ItineraryListItem } from '../../lib/types';
+import { listTripMembers, type TripMember } from '../../lib/members';
+import type { ItineraryItemDetail, ItineraryListItem } from '../../lib/types';
 import { colors, fonts, spacing } from '../../lib/theme';
 
 type Filter = 'mine' | 'all';
 
 export function ItineraryTab({ tripId, userId }: { tripId: string; userId: string }) {
+  const insets = useSafeAreaInsets();
   const [items, setItems] = useState<ItineraryListItem[]>([]);
+  const [members, setMembers] = useState<TripMember[]>([]);
   const [filter, setFilter] = useState<Filter>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [detailItemId, setDetailItemId] = useState<string | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [sheetMode, setSheetMode] = useState<'create' | 'edit'>('create');
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [editItem, setEditItem] = useState<ItineraryItemDetail | null>(null);
 
   const scrollRef = useRef<ScrollView>(null);
   const itemY = useRef<Record<string, number>>({});
@@ -34,7 +46,12 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
   const load = useCallback(async () => {
     try {
       setError(null);
-      setItems(await listItinerary(tripId));
+      const [itemList, memberList] = await Promise.all([
+        listItinerary(tripId),
+        listTripMembers(tripId),
+      ]);
+      setItems(itemList);
+      setMembers(memberList);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load the itinerary.');
     } finally {
@@ -129,7 +146,15 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
         >
           {visible.map((item) => (
             <View key={item.id} onLayout={(e) => onItemLayout(item.id, e)}>
-              <ItineraryCard item={item} isNow={nowIds.has(item.id)} now={now} />
+              <ItineraryCard
+                item={item}
+                isNow={nowIds.has(item.id)}
+                now={now}
+                onPress={() => {
+                  setDetailItemId(item.id);
+                  setDetailOpen(true);
+                }}
+              />
             </View>
           ))}
         </ScrollView>
@@ -145,6 +170,47 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
           <Text style={styles.pillText}>Go to current event</Text>
         </Pressable>
       ) : null}
+
+      <Pressable
+        onPress={() => {
+          setSheetMode('create');
+          setEditItem(null);
+          setSheetOpen(true);
+        }}
+        accessibilityRole="button"
+        accessibilityLabel="Add itinerary item"
+        style={({ pressed }) => [
+          styles.fab,
+          { bottom: insets.bottom + spacing.lg },
+          pressed && styles.fabPressed,
+        ]}
+      >
+        <Ionicons name="add" size={28} color={colors.buttonText} />
+      </Pressable>
+
+      <ItineraryDetailSheet
+        visible={detailOpen}
+        itemId={detailItemId}
+        members={members}
+        onClose={() => setDetailOpen(false)}
+        onEdit={(detail) => {
+          setDetailOpen(false);
+          setEditItem(detail);
+          setSheetMode('edit');
+          setSheetOpen(true);
+        }}
+      />
+
+      <ItineraryItemSheet
+        visible={sheetOpen}
+        mode={sheetMode}
+        tripId={tripId}
+        userId={userId}
+        members={members}
+        item={editItem}
+        onClose={() => setSheetOpen(false)}
+        onSaved={load}
+      />
     </View>
   );
 }
@@ -153,14 +219,20 @@ function ItineraryCard({
   item,
   isNow,
   now,
+  onPress,
 }: {
   item: ItineraryListItem;
   isNow: boolean;
   now: Date;
+  onPress: () => void;
 }) {
   const timeLabel = formatItemTime(item.start_time, now) + (isNow ? ' · now' : '');
   return (
-    <View style={[styles.card, isNow && styles.cardNow]}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      style={({ pressed }) => [styles.card, isNow && styles.cardNow, pressed && styles.cardPressed]}
+    >
       <View style={styles.cardTop}>
         <View style={styles.timeRow}>
           <View style={[styles.dot, isNow ? styles.dotNow : styles.dotNormal]} />
@@ -184,7 +256,7 @@ function ItineraryCard({
       ) : (
         <Text style={styles.subtitle}>Shared</Text>
       )}
-    </View>
+    </Pressable>
   );
 }
 
@@ -262,4 +334,21 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
   },
+  cardPressed: { opacity: 0.75 },
+  fab: {
+    position: 'absolute',
+    right: spacing.lg,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.buttonFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  fabPressed: { opacity: 0.85 },
 });

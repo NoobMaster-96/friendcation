@@ -24,6 +24,7 @@ alter table location_pings enable row level security;
 alter table expenses enable row level security;
 alter table expense_splits enable row level security;
 alter table settlements enable row level security;
+alter table itinerary_item_participants enable row level security;
 
 -- ============ USER_PROFILES ============
 create policy "user_profiles readable by any authenticated user"
@@ -134,6 +135,48 @@ create policy "same rule applies to delete on attachments"
       select 1 from itinerary_items ii
       join trip_members tm on tm.trip_id = ii.trip_id
       where ii.id = itinerary_attachments.itinerary_item_id
+      and tm.user_id = auth.uid()
+      and (
+        ii.item_type = 'shared'
+        or (ii.item_type = 'personal' and ii.created_by = auth.uid())
+      )
+    )
+  );
+
+-- ============ ITINERARY_ITEM_PARTICIPANTS (added in 0006) ============
+create policy "trip members can read item participants"
+  on itinerary_item_participants for select
+  using (
+    exists (
+      select 1 from itinerary_items ii
+      join trip_members tm on tm.trip_id = ii.trip_id
+      where ii.id = itinerary_item_participants.itinerary_item_id
+      and tm.user_id = auth.uid()
+    )
+  );
+
+create policy "item editors can add participants"
+  on itinerary_item_participants for insert
+  with check (
+    exists (
+      select 1 from itinerary_items ii
+      join trip_members tm on tm.trip_id = ii.trip_id
+      where ii.id = itinerary_item_participants.itinerary_item_id
+      and tm.user_id = auth.uid()
+      and (
+        ii.item_type = 'shared'
+        or (ii.item_type = 'personal' and ii.created_by = auth.uid())
+      )
+    )
+  );
+
+create policy "item editors can remove participants"
+  on itinerary_item_participants for delete
+  using (
+    exists (
+      select 1 from itinerary_items ii
+      join trip_members tm on tm.trip_id = ii.trip_id
+      where ii.id = itinerary_item_participants.itinerary_item_id
       and tm.user_id = auth.uid()
       and (
         ii.item_type = 'shared'

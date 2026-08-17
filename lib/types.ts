@@ -61,3 +61,35 @@ export type MemberLocation = {
   latitude: number | null;
   longitude: number | null;
 };
+
+export type ItineraryParticipant = { userId: string; name: string; initials: string };
+
+export type ItineraryAttachment = {
+  id: string;
+  fileName: string;
+  fileType: 'pdf' | 'image';
+  filePath: string;
+};
+
+export type ItineraryItemDetail = {
+  id: string;
+  tripId: string;
+  title: string;
+  startTime: string | null;
+  endTime: string | null;
+  notes: string | null;
+  itemType: ItemType;
+  createdBy: string | null;
+  participantIds: string[];
+  participants: ItineraryParticipant[];
+  attachments: ItineraryAttachment[];
+};
+
+/** A file chosen in the picker, pending upload. */
+export type PickedFile = {
+  uri: string;
+  name: string;
+  fileType: 'pdf' | 'image';
+  mimeType: string;
+  base64?: string | null;
+};

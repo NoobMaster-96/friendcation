@@ -85,7 +85,7 @@ export default function TripDetail() {
 
   const tripId = (id as string) ?? '';
   const userId = user?.id ?? '';
-  const showFab = active === 0 || active === 2;
+  const showFab = active === 2;
 
   if (loadingTrip) {
     return (
@@ -166,12 +166,12 @@ export default function TripDetail() {
         <Pressable
           onPress={() =>
             router.push({
-              pathname: active === 0 ? '/add-itinerary' : '/add-expense',
+              pathname: '/add-expense',
               params: { tripId },
             })
           }
           accessibilityRole="button"
-          accessibilityLabel={active === 0 ? 'Add itinerary item' : 'Add expense'}
+          accessibilityLabel="Add expense"
           style={({ pressed }) => [
             styles.fab,
             { bottom: insets.bottom + spacing.lg },
