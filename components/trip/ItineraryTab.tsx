@@ -69,7 +69,7 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
   const visible =
     filter === 'all'
       ? items
-      : items.filter((it) => it.item_type === 'shared' || it.created_by === userId);
+      : items.filter((it) => it.participantIds.includes(userId));
 
   const nowIds = new Set(visible.filter((it) => isNowItem(it, now)).map((it) => it.id));
   const firstNow = visible.find((it) => nowIds.has(it.id));
@@ -248,13 +248,15 @@ function ItineraryCard({
 
       <Text style={styles.title}>{item.title}</Text>
 
-      {item.item_type === 'personal' ? (
+      {item.participantNames.length > 1 ? (
+        <Text style={styles.subtitle}>Shared</Text>
+      ) : (
         <View style={styles.subRow}>
           <Ionicons name="person" size={12} color={colors.textMuted} />
-          <Text style={styles.subtitle}>{item.creatorName ?? 'Personal'}</Text>
+          <Text style={styles.subtitle}>
+            {item.participantNames[0] ?? item.creatorName ?? 'Personal'}
+          </Text>
         </View>
-      ) : (
-        <Text style={styles.subtitle}>Shared</Text>
       )}
     </Pressable>
   );

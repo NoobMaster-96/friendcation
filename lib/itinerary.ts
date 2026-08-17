@@ -14,6 +14,7 @@ const ATTACHMENT_BUCKET = 'itinerary-attachments';
 const COLUMNS =
   'id,trip_id,title,location_name,start_time,end_time,notes,item_type,created_by,' +
   'creator:user_profiles!created_by(first_name),' +
+  'itinerary_item_participants(user_id, user_profiles(first_name)),' +
   'itinerary_attachments(count)';
 
 export async function listItinerary(tripId: string): Promise<ItineraryListItem[]> {
@@ -29,6 +30,16 @@ export async function listItinerary(tripId: string): Promise<ItineraryListItem[]
     const attachmentCount = Array.isArray(r.itinerary_attachments)
       ? r.itinerary_attachments[0]?.count ?? 0
       : 0;
+    const participantRows: any[] = Array.isArray(r.itinerary_item_participants)
+      ? r.itinerary_item_participants
+      : [];
+    const participantIds: string[] = [];
+    const participantNames: string[] = [];
+    for (const p of participantRows) {
+      const prof = Array.isArray(p.user_profiles) ? p.user_profiles[0] : p.user_profiles;
+      participantIds.push(p.user_id);
+      participantNames.push(prof?.first_name ?? 'Member');
+    }
     return {
       id: r.id,
       trip_id: r.trip_id,
@@ -40,6 +51,8 @@ export async function listItinerary(tripId: string): Promise<ItineraryListItem[]
       item_type: r.item_type,
       created_by: r.created_by,
       creatorName: creator?.first_name ?? null,
+      participantIds,
+      participantNames,
       attachmentCount,
     };
   });
