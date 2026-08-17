@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   Linking,
   Modal,
   Pressable,
@@ -10,9 +11,10 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { formatItemTime, getAttachmentUrl, getItineraryItemDetail } from '../lib/itinerary';
-import type { ItineraryItemDetail } from '../lib/types';
+import type { ItineraryAttachment, ItineraryItemDetail } from '../lib/types';
 import type { TripMember } from '../lib/members';
 import { MemberChips } from './MemberChips';
 import { Button } from './Button';
@@ -30,6 +32,7 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
   const insets = useSafeAreaInsets();
   const [detail, setDetail] = useState<ItineraryItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [openingId, setOpeningId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!visible || !itemId) return;
@@ -49,9 +52,25 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
     };
   }, [visible, itemId]);
 
-  const openAttachment = async (path: string) => {
-    const url = await getAttachmentUrl(path);
-    if (url) Linking.openURL(url);
+  const openAttachment = async (a: ItineraryAttachment) => {
+    if (openingId) return;
+    setOpeningId(a.id);
+    try {
+      const url = await getAttachmentUrl(a.filePath);
+      if (!url) {
+        Alert.alert('Could not open file', 'The file link could not be generated. Please try again.');
+        return;
+      }
+      try {
+        await WebBrowser.openBrowserAsync(url);
+      } catch {
+        await Linking.openURL(url);
+      }
+    } catch (e) {
+      Alert.alert('Could not open file', e instanceof Error ? e.message : 'Please try again.');
+    } finally {
+      setOpeningId(null);
+    }
   };
 
   return (
@@ -96,7 +115,8 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
                   {detail.attachments.map((a) => (
                     <Pressable
                       key={a.id}
-                      onPress={() => openAttachment(a.filePath)}
+                      onPress={() => openAttachment(a)}
+                      disabled={openingId !== null}
                       accessibilityRole="button"
                       style={({ pressed }) => [styles.pill, pressed && styles.pressed]}
                     >
@@ -108,7 +128,11 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
                       <Text style={styles.pillName} numberOfLines={1}>
                         {a.fileName}
                       </Text>
-                      <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
+                      {openingId === a.id ? (
+                        <ActivityIndicator size="small" color={colors.textSecondary} />
+                      ) : (
+                        <Ionicons name="open-outline" size={16} color={colors.textSecondary} />
+                      )}
                     </Pressable>
                   ))}
                 </>
