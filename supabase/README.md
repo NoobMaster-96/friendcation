@@ -12,10 +12,11 @@ Run these against your Supabase project **in order**:
 | `migrations/0001_schema.sql` | 9 core tables | Always |
 | `migrations/0002_signup_trigger.sql` | Referral-based signup trigger on `auth.users` | Always |
 | `migrations/0003_storage.sql` | Private `itinerary-attachments` storage bucket | Always |
-| `migrations/0004_rls_and_storage_policies.sql` | **Row Level Security** — public-table policies (storage policies moved to 0007) | **Before any real user** |
+| `migrations/0004_rls_and_storage_policies.sql` | No-op — superseded by `0008` (kept so numbering stays in order) | — |
 | `migrations/0005_email_available.sql` | `email_available()` RPC — pre-signup email check (SECURITY DEFINER, RLS-safe) | Always |
 | `migrations/0006_itinerary_item_participants.sql` | `itinerary_item_participants` join table (the "People" on an itinerary item) | Always |
 | `migrations/0007_itinerary_attachments_storage.sql` | `storage.objects` read/insert/delete policies for the attachments bucket | **Always** (attachment upload fails without it) |
+| `migrations/0008_enable_rls.sql` | **Row Level Security** for every table, membership helpers, and the `join_trip_by_code` / `add_trip_member_by_email` RPCs | **Before any real user** |
 
 ### How to apply
 
@@ -27,12 +28,13 @@ Or with the Supabase CLI (if you adopt it):
 supabase db push        # applies migrations/*.sql in order
 ```
 
-## ⚠️ RLS is a hard gate (0004)
+## ⚠️ RLS is a hard gate (0008)
 
 With RLS **off**, any authenticated client can read/write **any** row in **any**
 table — including other people's location, expenses, and itinerary. During early
 solo development the live project may run with RLS disabled for convenience, but
-`0004` **must be applied before you send a referral code to any real friend**.
+`0008` **must be applied before you send a referral code to any real friend**.
+It also adds the RPCs the app now uses to join by invite code and add people by email.
 
 ## Bootstrap (first user)
 

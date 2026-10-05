@@ -47,23 +47,17 @@ export async function listTripMembers(tripId: string): Promise<TripMember[]> {
  * Looks up an account by email and adds them to the trip. Throws
  * EmailNotRegisteredError when no account exists (invite-only app).
  */
+/**
+ * Adds via the add_trip_member_by_email RPC: profiles aren't readable by
+ * non-trip-mates under RLS. Returns null from the RPC when the email isn't registered.
+ */
 export async function addMemberByEmail(tripId: string, email: string): Promise<TripMember> {
-  const normalized = email.trim().toLowerCase();
-  const { data: profile, error } = await supabase
-    .from('user_profiles')
-    .select('id, first_name, last_name, email')
-    .ilike('email', normalized)
-    .maybeSingle();
+  const { data: profile, error } = await supabase.rpc('add_trip_member_by_email', {
+    p_trip_id: tripId,
+    p_email: email.trim().toLowerCase(),
+  });
   if (error) throw error;
   if (!profile) throw new EmailNotRegisteredError();
-
-  const { error: insErr } = await supabase
-    .from('trip_members')
-    .upsert(
-      { trip_id: tripId, user_id: profile.id, role: 'member' },
-      { onConflict: 'trip_id,user_id', ignoreDuplicates: true }
-    );
-  if (insErr) throw insErr;
 
   const first = profile.first_name?.trim() ?? '';
   const last = profile.last_name?.trim() ?? '';

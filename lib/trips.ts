@@ -88,23 +88,19 @@ export async function createTrip(
 }
 
 /** Joins a trip by its invite code (idempotent if already a member). */
-export async function joinTripByCode(userId: string, code: string): Promise<Trip> {
+/** Joins via the join_trip_by_code RPC: non-members can't read a trip under RLS. */
+export async function joinTripByCode(_userId: string, code: string): Promise<Trip> {
   const normalized = code.trim().toLowerCase();
-  const { data: trip, error } = await supabase
+  const { data: tripId, error } = await supabase.rpc('join_trip_by_code', { p_code: normalized });
+  if (error) throw error;
+  if (!tripId) throw new Error('No trip found for that invite code.');
+
+  const { data: trip, error: tripError } = await supabase
     .from('trips')
     .select(TRIP_COLUMNS)
-    .eq('invite_code', normalized)
-    .maybeSingle();
-  if (error) throw error;
-  if (!trip) throw new Error('No trip found for that invite code.');
-
-  const { error: memberError } = await supabase
-    .from('trip_members')
-    .upsert(
-      { trip_id: trip.id, user_id: userId, role: 'member' },
-      { onConflict: 'trip_id,user_id', ignoreDuplicates: true }
-    );
-  if (memberError) throw memberError;
+    .eq('id', tripId)
+    .single();
+  if (tripError) throw tripError;
   return trip as Trip;
 }
 
