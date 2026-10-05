@@ -1,12 +1,16 @@
-import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { Modal, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
-import { colors, fonts, spacing } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { ThemedSwitch } from './ThemedSwitch';
+import { fonts, spacing } from '../lib/theme';
 
 export function ProfileMenu() {
+  const styles = useStyles();
+  const { isDark, toggleScheme } = useTheme();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { profile, signOut } = useAuth();
@@ -41,6 +45,17 @@ export function ProfileMenu() {
             }}
           />
           <View style={styles.divider} />
+          {/* Stays open so the switch to dark/light is visible immediately. */}
+          <MenuItem
+            icon="moon-outline"
+            label="Dark mode"
+            onPress={toggleScheme}
+            checked={isDark}
+            trailing={
+              <ThemedSwitch value={isDark} onValueChange={toggleScheme} style={styles.switch} />
+            }
+          />
+          <View style={styles.divider} />
           <MenuItem
             icon="log-out-outline"
             label="Sign out"
@@ -59,24 +74,34 @@ function MenuItem({
   icon,
   label,
   onPress,
+  checked,
+  trailing,
 }: {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   label: string;
   onPress: () => void;
+  /** Set for toggle rows: announces the row as a switch with this state. */
+  checked?: boolean;
+  trailing?: ReactNode;
 }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
+  const isToggle = checked !== undefined;
   return (
     <Pressable
       onPress={onPress}
-      accessibilityRole="button"
+      accessibilityRole={isToggle ? 'switch' : 'button'}
+      accessibilityState={isToggle ? { checked } : undefined}
       style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
     >
       <Ionicons name={icon} size={18} color={colors.text} />
       <Text style={styles.itemLabel}>{label}</Text>
+      {trailing}
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   avatar: {
     width: 44,
     height: 44,
@@ -90,13 +115,13 @@ const styles = StyleSheet.create({
   backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   menu: {
     position: 'absolute',
-    minWidth: 190,
+    minWidth: 220,
     backgroundColor: colors.background,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.border,
     paddingVertical: 6,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOpacity: 0.15,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 8 },
@@ -110,6 +135,8 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   itemPressed: { backgroundColor: colors.surface },
-  itemLabel: { fontSize: 15, fontFamily: fonts.medium, color: colors.text },
+  itemLabel: { flex: 1, fontSize: 15, fontFamily: fonts.medium, color: colors.text },
+  // Scaled down so the toggle row keeps the same height as the other rows.
+  switch: { marginVertical: -6, transform: [{ scale: 0.85 }] },
   divider: { height: 1, backgroundColor: colors.border, marginVertical: 2 },
-});
+}));

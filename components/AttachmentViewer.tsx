@@ -6,7 +6,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -15,6 +14,7 @@ import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getAttachmentUrl } from '../lib/itinerary';
 import type { ItineraryAttachment } from '../lib/types';
+import { makeStyles, useTheme } from '../context/ThemeContext';
 import { fonts } from '../lib/theme';
 
 type Props = {
@@ -24,6 +24,8 @@ type Props = {
 
 /** Full-screen in-app viewer: native Image for photos, WebView for PDFs. */
 export function AttachmentViewer({ attachment, onClose }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [url, setUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,11 +82,11 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
                 accessibilityRole="button"
                 accessibilityLabel="Open externally"
               >
-                <Ionicons name="open-outline" size={22} color="#fff" />
+                <Ionicons name="open-outline" size={22} color={colors.onViewer} />
               </Pressable>
             ) : null}
             <Pressable onPress={onClose} hitSlop={8} accessibilityRole="button" accessibilityLabel="Close">
-              <Ionicons name="close" size={26} color="#fff" />
+              <Ionicons name="close" size={26} color={colors.onViewer} />
             </Pressable>
           </View>
         </View>
@@ -92,7 +94,7 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
         <View style={styles.body}>
           {loading ? (
             <View style={styles.center}>
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color={colors.onViewer} />
             </View>
           ) : error ? (
             <View style={styles.center}>
@@ -113,7 +115,7 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
               />
               {imgLoading ? (
                 <View style={styles.webLoading}>
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.onViewer} />
                 </View>
               ) : null}
             </View>
@@ -127,7 +129,7 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
               startInLoadingState
               renderLoading={() => (
                 <View style={styles.webLoading}>
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={colors.onViewer} />
                 </View>
               )}
               onError={() => setError('This file could not be displayed.')}
@@ -142,8 +144,8 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0e0b07' },
+const useStyles = makeStyles((colors) => ({
+  root: { flex: 1, backgroundColor: colors.viewerBackground },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -152,12 +154,12 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     gap: 16,
   },
-  name: { flex: 1, color: '#fff', fontSize: 15, fontFamily: fonts.semibold },
+  name: { flex: 1, color: colors.onViewer, fontSize: 15, fontFamily: fonts.semibold },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   body: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  fill: { flex: 1, width: '100%', backgroundColor: '#0e0b07' },
-  web: { flex: 1, backgroundColor: '#0e0b07' },
+  fill: { flex: 1, width: '100%', backgroundColor: colors.viewerBackground },
+  web: { flex: 1, backgroundColor: colors.viewerBackground },
   image: { flex: 1, width: '100%' },
   webLoading: {
     position: 'absolute',
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#0e0b07',
+    backgroundColor: colors.viewerBackground,
   },
-  error: { color: '#fff', fontSize: 14, fontFamily: fonts.regular, paddingHorizontal: 32, textAlign: 'center' },
-});
+  error: { color: colors.onViewer, fontSize: 14, fontFamily: fonts.regular, paddingHorizontal: 32, textAlign: 'center' },
+}));

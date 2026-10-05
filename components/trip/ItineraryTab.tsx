@@ -6,7 +6,6 @@ import {
   type NativeSyntheticEvent,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -19,11 +18,14 @@ import { ItineraryDetailSheet } from '../ItineraryDetailSheet';
 import { formatItemTime, isNowItem, listItinerary } from '../../lib/itinerary';
 import { listTripMembers, type TripMember } from '../../lib/members';
 import type { ItineraryItemDetail, ItineraryListItem } from '../../lib/types';
-import { colors, fonts, spacing } from '../../lib/theme';
+import { makeStyles, useTheme } from '../../context/ThemeContext';
+import { fonts, spacing } from '../../lib/theme';
 
 type Filter = 'mine' | 'all';
 
 export function ItineraryTab({ tripId, userId }: { tripId: string; userId: string }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [items, setItems] = useState<ItineraryListItem[]>([]);
   const [members, setMembers] = useState<TripMember[]>([]);
@@ -226,6 +228,8 @@ function ItineraryCard({
   now: Date;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const timeLabel = formatItemTime(item.start_time, now) + (isNow ? ' · now' : '');
   return (
     <Pressable
@@ -262,7 +266,7 @@ function ItineraryCard({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   toggleWrap: {
@@ -314,7 +318,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -346,11 +350,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.buttonFill,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOpacity: 0.2,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
   fabPressed: { opacity: 0.85 },
-});
+}));

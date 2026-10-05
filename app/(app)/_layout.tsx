@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
-import { colors } from '../../lib/theme';
+import { useTheme } from '../../context/ThemeContext';
 
 export const unstable_settings = { initialRouteName: 'index' };
 
 export default function AppLayout() {
+  const { colors } = useTheme();
   return (
     <Stack
       screenOptions={{

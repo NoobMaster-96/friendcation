@@ -1,12 +1,14 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../context/AuthContext';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { Button } from '../../components/Button';
-import { colors, fonts, radius, spacing } from '../../lib/theme';
+import { makeStyles } from '../../context/ThemeContext';
+import { fonts, radius, spacing } from '../../lib/theme';
 
 export default function Profile() {
+  const styles = useStyles();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { profile, signOut } = useAuth();
@@ -36,7 +38,7 @@ export default function Profile() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
   card: {
@@ -61,4 +63,4 @@ const styles = StyleSheet.create({
   },
   join: { marginTop: spacing.md },
   spacer: { flex: 1 },
-});
+}));

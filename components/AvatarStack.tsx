@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { colors, fonts } from '../lib/theme';
+import { Text, View } from 'react-native';
+import { makeStyles } from '../context/ThemeContext';
+import { fonts } from '../lib/theme';
 
 type Props = {
   initials: string[];
@@ -11,6 +12,7 @@ type Props = {
 const CHIP = 24;
 
 export function AvatarStack({ initials, total, max = 2 }: Props) {
+  const styles = useStyles();
   const shown = initials.slice(0, max);
   const extra = total - shown.length;
 
@@ -30,7 +32,7 @@ export function AvatarStack({ initials, total, max = 2 }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
   chip: {
     width: CHIP,
@@ -45,4 +47,4 @@ const styles = StyleSheet.create({
   overlap: { marginLeft: -8 },
   initial: { fontSize: 11, fontFamily: fonts.semibold, color: colors.text },
   moreText: { fontSize: 10, fontFamily: fonts.medium, color: colors.textSecondary },
-});
+}));

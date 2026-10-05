@@ -3,7 +3,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -13,9 +12,11 @@ import { joinTripByCode } from '../../lib/trips';
 import { ScreenHeader } from '../../components/ScreenHeader';
 import { TextField } from '../../components/TextField';
 import { Button } from '../../components/Button';
-import { colors, fonts, spacing } from '../../lib/theme';
+import { makeStyles } from '../../context/ThemeContext';
+import { fonts, spacing } from '../../lib/theme';
 
 export default function JoinTrip() {
+  const styles = useStyles();
   const router = useRouter();
   const { user } = useAuth();
 
@@ -77,7 +78,7 @@ export default function JoinTrip() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
@@ -96,4 +97,4 @@ const styles = StyleSheet.create({
     color: colors.danger,
   },
   cta: { marginTop: spacing.xs },
-});
+}));

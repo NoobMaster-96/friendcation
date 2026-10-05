@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { Pressable } from 'react-native';
 import type { TripMember } from '../lib/members';
-import { colors, fonts } from '../lib/theme';
+import { makeStyles } from '../context/ThemeContext';
+import { fonts } from '../lib/theme';
 
 type Props = {
   members: TripMember[];
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function MemberChips({ members, selectedIds, onToggle, onSelectAll, readOnly }: Props) {
+  const styles = useStyles();
   const shown = readOnly ? members.filter((m) => selectedIds.includes(m.userId)) : members;
   const allSelected = members.length > 0 && selectedIds.length === members.length;
 
@@ -52,6 +54,7 @@ function Chip({
   label: string;
   onPress?: () => void;
 }) {
+  const styles = useStyles();
   return (
     <Pressable
       onPress={onPress}
@@ -77,7 +80,7 @@ function Chip({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     flexDirection: 'row',
@@ -100,11 +103,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarSelected: { backgroundColor: 'rgba(255,253,248,0.25)' },
+  avatarSelected: { backgroundColor: colors.onPrimarySubtle },
   avatarText: { fontSize: 11, fontFamily: fonts.semibold, color: colors.text },
   avatarTextSelected: { color: colors.buttonText },
   label: { fontSize: 14, fontFamily: fonts.medium },
   labelSelected: { color: colors.buttonText },
   labelUnselected: { color: colors.text },
   chipNoAvatarPad: { paddingLeft: 12 },
-});
+}));

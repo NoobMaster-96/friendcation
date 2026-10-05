@@ -4,7 +4,6 @@ import {
   FlatList,
   Pressable,
   RefreshControl,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -24,11 +23,14 @@ import {
   type TripBuckets,
 } from '../../lib/trips';
 import type { TripListItem } from '../../lib/types';
-import { colors, fonts, spacing } from '../../lib/theme';
+import { makeStyles, useTheme } from '../../context/ThemeContext';
+import { fonts, spacing } from '../../lib/theme';
 
 type Tab = 'upcoming' | 'past';
 
 export default function TripList() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -156,6 +158,7 @@ function TripCard({
   past: boolean;
   onPress: () => void;
 }) {
+  const styles = useStyles();
   return (
     <Pressable
       onPress={onPress}
@@ -180,6 +183,7 @@ function EmptyState({
   error: string | null;
   onJoin: () => void;
 }) {
+  const styles = useStyles();
   if (error) {
     return (
       <View style={styles.empty}>
@@ -209,7 +213,7 @@ function EmptyState({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   toggleWrap: {
     paddingHorizontal: spacing.lg,
@@ -244,7 +248,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.buttonFill,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
@@ -268,4 +272,4 @@ const styles = StyleSheet.create({
   },
   emptyLink: { marginTop: spacing.lg },
   emptyLinkText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.text },
-});
+}));

@@ -4,7 +4,6 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -31,9 +30,12 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { EditTripSheet } from '../../components/EditTripSheet';
 import { TextField } from '../../components/TextField';
 import { Button } from '../../components/Button';
-import { colors, fonts, radius, spacing } from '../../lib/theme';
+import { makeStyles, useTheme } from '../../context/ThemeContext';
+import { fonts, radius, spacing } from '../../lib/theme';
 
 export default function TripSettings() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -310,7 +312,7 @@ export default function TripSettings() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
@@ -410,4 +412,4 @@ const styles = StyleSheet.create({
   dangerText: { color: colors.danger },
   disabledBtn: { borderColor: colors.border, opacity: 0.5 },
   disabledText: { color: colors.textMuted },
-});
+}));

@@ -1,11 +1,14 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { computeNetBalance, formatMoney, listExpenses } from '../../lib/expenses';
 import type { ExpenseListItem } from '../../lib/types';
-import { colors, fonts, radius, spacing } from '../../lib/theme';
+import { makeStyles, useTheme } from '../../context/ThemeContext';
+import { fonts, radius, spacing } from '../../lib/theme';
 
 export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const [expenses, setExpenses] = useState<ExpenseListItem[]>([]);
   const [net, setNet] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -76,7 +79,7 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: 120 },
   summary: {
@@ -110,4 +113,4 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.textSecondary,
   },
-});
+}));

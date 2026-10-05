@@ -1,9 +1,10 @@
 import { type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CircleButton } from './CircleButton';
-import { colors, fonts, spacing } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { fonts, spacing } from '../lib/theme';
 
 type Props = {
   title: string;
@@ -15,6 +16,8 @@ type Props = {
 };
 
 export function ScreenHeader({ title, subtitle, onBack, right, onEdit }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const hasTopRow = !!onBack || !!right;
 
@@ -55,9 +58,9 @@ export function ScreenHeader({ title, subtitle, onBack, right, onEdit }: Props) 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.navBackground,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.md,
     borderBottomWidth: 1,
@@ -82,4 +85,4 @@ const styles = StyleSheet.create({
   subtitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
   subtitle: { fontSize: 13, fontFamily: fonts.regular, color: colors.textSecondary },
   edit: { padding: 2 },
-});
+}));

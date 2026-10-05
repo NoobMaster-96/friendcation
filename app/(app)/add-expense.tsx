@@ -1,9 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { colors, fonts, spacing } from '../../lib/theme';
+import { makeStyles } from '../../context/ThemeContext';
+import { fonts, spacing } from '../../lib/theme';
 
 export default function AddExpense() {
+  const styles = useStyles();
   const router = useRouter();
   // tripId is passed for the upcoming add-expense form.
   useLocalSearchParams<{ tripId: string }>();
@@ -18,8 +20,8 @@ export default function AddExpense() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   content: { flex: 1, paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
   text: { fontSize: 15, fontFamily: fonts.regular, color: colors.textSecondary },
-});
+}));

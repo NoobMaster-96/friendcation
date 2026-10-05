@@ -4,7 +4,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -13,9 +12,11 @@ import { supabase } from '../../lib/supabase';
 import { Button } from '../../components/Button';
 import { TextField } from '../../components/TextField';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { colors, fonts, radius, spacing } from '../../lib/theme';
+import { makeStyles } from '../../context/ThemeContext';
+import { fonts, radius, spacing } from '../../lib/theme';
 
 export default function Login() {
+  const styles = useStyles();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -98,7 +99,7 @@ export default function Login() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
@@ -130,4 +131,4 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.textMuted,
   },
-});
+}));

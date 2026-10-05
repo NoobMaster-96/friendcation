@@ -5,7 +5,6 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   Pressable,
-  StyleSheet,
   Text,
   View,
   useWindowDimensions,
@@ -23,13 +22,16 @@ import { EditTripSheet } from '../../../components/EditTripSheet';
 import { ItineraryTab } from '../../../components/trip/ItineraryTab';
 import { LocationTab } from '../../../components/trip/LocationTab';
 import { ExpensesTab } from '../../../components/trip/ExpensesTab';
-import { colors, fonts, spacing } from '../../../lib/theme';
+import { makeStyles, useTheme } from '../../../context/ThemeContext';
+import { fonts, spacing } from '../../../lib/theme';
 
 const TABS = ['Itinerary', 'Live location', 'Expenses'] as const;
 const H_PAD = spacing.lg;
 const UNDERLINE_INSET = 14;
 
 export default function TripDetail() {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -194,7 +196,7 @@ export default function TripDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tabBar: {
@@ -223,11 +225,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.buttonFill,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: colors.shadow,
     shadowOpacity: 0.18,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 4 },
     elevation: 6,
   },
   fabPressed: { opacity: 0.9 },
-});
+}));

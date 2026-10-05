@@ -4,7 +4,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -14,9 +13,11 @@ import { isEmailAvailable, isValidEmail } from '../../lib/account';
 import { Button } from '../../components/Button';
 import { TextField } from '../../components/TextField';
 import { ScreenHeader } from '../../components/ScreenHeader';
-import { colors, fonts, radius, spacing } from '../../lib/theme';
+import { makeStyles } from '../../context/ThemeContext';
+import { fonts, radius, spacing } from '../../lib/theme';
 
 export default function Register() {
+  const styles = useStyles();
   const router = useRouter();
   const [step, setStep] = useState<1 | 2>(1);
 
@@ -235,7 +236,7 @@ export default function Register() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   screen: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.xl },
@@ -285,4 +286,4 @@ const styles = StyleSheet.create({
     fontFamily: fonts.medium,
     color: colors.text,
   },
-});
+}));

@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
 
 type Props = {
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -9,6 +9,8 @@ type Props = {
 };
 
 export function CircleButton({ icon, onPress, accessibilityLabel }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <Pressable
       onPress={onPress}
@@ -22,7 +24,7 @@ export function CircleButton({ icon, onPress, accessibilityLabel }: Props) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   circle: {
     width: 44,
     height: 44,
@@ -34,4 +36,4 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   pressed: { opacity: 0.6 },
-});
+}));

@@ -1,12 +1,12 @@
 import {
   ActivityIndicator,
   Pressable,
-  StyleSheet,
   Text,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { colors, fonts, radius } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { fonts, radius } from '../lib/theme';
 
 type Props = {
   label: string;
@@ -25,6 +25,8 @@ export function Button({
   variant = 'primary',
   style,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const isPrimary = variant === 'primary';
   const isDisabled = disabled || loading;
 
@@ -52,7 +54,7 @@ export function Button({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   base: {
     height: 56,
     borderRadius: radius.button,
@@ -71,4 +73,4 @@ const styles = StyleSheet.create({
   label: { fontSize: 17, fontFamily: fonts.semibold },
   labelPrimary: { color: colors.buttonText },
   labelSecondary: { color: colors.text },
-});
+}));

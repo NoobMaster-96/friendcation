@@ -4,7 +4,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -16,7 +15,8 @@ import type { TripMember } from '../lib/members';
 import { MemberChips } from './MemberChips';
 import { AttachmentViewer } from './AttachmentViewer';
 import { Button } from './Button';
-import { colors, fonts, spacing } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { fonts, spacing } from '../lib/theme';
 
 type Props = {
   visible: boolean;
@@ -27,6 +27,8 @@ type Props = {
 };
 
 export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [detail, setDetail] = useState<ItineraryItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -123,7 +125,7 @@ export function ItineraryDetailSheet({ visible, itemId, members, onClose, onEdit
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   root: { flex: 1, justifyContent: 'flex-end' },
   backdrop: {
     position: 'absolute',
@@ -131,7 +133,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(43,36,29,0.35)',
+    backgroundColor: colors.scrim,
   },
   sheet: {
     backgroundColor: colors.background,
@@ -182,4 +184,4 @@ const styles = StyleSheet.create({
   },
   pillName: { flex: 1, fontSize: 14, fontFamily: fonts.medium, color: colors.text },
   close: { marginTop: spacing.md },
-});
+}));

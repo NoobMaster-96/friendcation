@@ -4,7 +4,6 @@ import {
   Modal,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   TextInput,
   View,
@@ -13,7 +12,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { formatDMY, parseDMYtoDate } from '../lib/dates';
-import { colors, fonts, radius, spacing } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { fonts, radius, spacing } from '../lib/theme';
 
 type Props = {
   label: string;
@@ -32,6 +32,8 @@ export function DateField({
   placeholder = 'DD-MM-YYYY',
   minimumDate,
 }: Props) {
+  const { colors, scheme } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [show, setShow] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -63,6 +65,7 @@ export function DateField({
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           selectionColor={colors.text}
+          keyboardAppearance={scheme}
           keyboardType="numbers-and-punctuation"
           maxLength={10}
           onFocus={() => setFocused(true)}
@@ -95,6 +98,7 @@ export function DateField({
                 value={initial}
                 mode="date"
                 display="inline"
+                themeVariant={scheme}
                 minimumDate={minimumDate}
                 onChange={onPick}
               />
@@ -115,7 +119,7 @@ export function DateField({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   wrap: { marginBottom: 16 },
   label: { fontSize: 15, fontFamily: fonts.medium, color: colors.text, marginBottom: 8 },
   field: {
@@ -140,7 +144,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(43,36,29,0.35)',
+    backgroundColor: colors.scrim,
   },
   pickerSheet: {
     backgroundColor: colors.background,
@@ -157,4 +161,4 @@ const styles = StyleSheet.create({
   },
   pickerTitle: { fontSize: 16, fontFamily: fonts.semibold, color: colors.text },
   doneText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.text },
-});
+}));

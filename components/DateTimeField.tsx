@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { formatDMY } from '../lib/dates';
-import { colors, fonts, radius, spacing } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { fonts, radius, spacing } from '../lib/theme';
 
 type Props = {
   label: string;
@@ -20,6 +21,8 @@ function formatDateTime(d: Date): string {
 }
 
 export function DateTimeField({ label, value, onChange, error, placeholder = 'Select time' }: Props) {
+  const { colors, scheme } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [show, setShow] = useState(false);
 
@@ -60,7 +63,13 @@ export function DateTimeField({ label, value, onChange, error, placeholder = 'Se
                   <Text style={styles.doneText}>Done</Text>
                 </Pressable>
               </View>
-              <DateTimePicker value={initial} mode="datetime" display="inline" onChange={onPick} />
+              <DateTimePicker
+                value={initial}
+                mode="datetime"
+                display="inline"
+                themeVariant={scheme}
+                onChange={onPick}
+              />
             </View>
           </View>
         </Modal>
@@ -72,7 +81,7 @@ export function DateTimeField({ label, value, onChange, error, placeholder = 'Se
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   wrap: { marginBottom: 16 },
   label: { fontSize: 15, fontFamily: fonts.medium, color: colors.text, marginBottom: 8 },
   field: {
@@ -97,7 +106,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(43,36,29,0.35)',
+    backgroundColor: colors.scrim,
   },
   pickerSheet: {
     backgroundColor: colors.background,
@@ -114,4 +123,4 @@ const styles = StyleSheet.create({
   },
   pickerTitle: { fontSize: 16, fontFamily: fonts.semibold, color: colors.text },
   doneText: { fontSize: 15, fontFamily: fonts.semibold, color: colors.text },
-});
+}));

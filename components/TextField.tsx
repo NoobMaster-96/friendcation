@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import {
-  StyleSheet,
   Text,
   TextInput,
   View,
   type TextInputProps,
 } from 'react-native';
-import { colors, fonts, radius } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { fonts, radius } from '../lib/theme';
 
 type Props = TextInputProps & {
   label: string;
@@ -16,6 +16,8 @@ type Props = TextInputProps & {
 };
 
 export function TextField({ label, error, code = false, style, ...rest }: Props) {
+  const { colors, scheme } = useTheme();
+  const styles = useStyles();
   const [focused, setFocused] = useState(false);
 
   return (
@@ -24,6 +26,7 @@ export function TextField({ label, error, code = false, style, ...rest }: Props)
       <TextInput
         placeholderTextColor={colors.textMuted}
         selectionColor={colors.text}
+        keyboardAppearance={scheme}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         style={[
@@ -40,7 +43,7 @@ export function TextField({ label, error, code = false, style, ...rest }: Props)
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   wrap: { marginBottom: 16 },
   label: {
     fontSize: 15,
@@ -72,4 +75,4 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.danger,
   },
-});
+}));

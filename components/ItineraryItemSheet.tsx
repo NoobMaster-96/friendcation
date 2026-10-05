@@ -6,7 +6,6 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -26,7 +25,8 @@ import { TextField } from './TextField';
 import { DateTimeField } from './DateTimeField';
 import { MemberChips } from './MemberChips';
 import { Button } from './Button';
-import { colors, fonts, radius, spacing } from '../lib/theme';
+import { makeStyles, useTheme } from '../context/ThemeContext';
+import { fonts, radius, spacing } from '../lib/theme';
 
 type Props = {
   visible: boolean;
@@ -51,6 +51,8 @@ export function ItineraryItemSheet({
   onClose,
   onSaved,
 }: Props) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const insets = useSafeAreaInsets();
 
   const [title, setTitle] = useState('');
@@ -282,6 +284,8 @@ function AttachmentPill({
   name: string;
   onRemove: () => void;
 }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   return (
     <View style={styles.pill}>
       <Ionicons name={icon} size={18} color={colors.text} />
@@ -295,7 +299,7 @@ function AttachmentPill({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   root: { flex: 1, justifyContent: 'flex-end' },
   backdrop: {
     position: 'absolute',
@@ -303,7 +307,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(43,36,29,0.35)',
+    backgroundColor: colors.scrim,
   },
   sheet: {
     backgroundColor: colors.background,
@@ -353,4 +357,4 @@ const styles = StyleSheet.create({
   error: { marginTop: spacing.md, fontSize: 13, fontFamily: fonts.regular, color: colors.danger },
   actions: { flexDirection: 'row', gap: spacing.md, marginTop: spacing.md },
   action: { flex: 1 },
-});
+}));

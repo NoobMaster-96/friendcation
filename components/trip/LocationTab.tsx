@@ -1,14 +1,15 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { formatAgo, listMemberLocations, setLocationSharing } from '../../lib/location';
 import type { MemberLocation } from '../../lib/types';
-import { colors, fonts, spacing } from '../../lib/theme';
-
-const DOT_COLORS = [colors.buttonFill, '#8f8272'];
-const OFF_DOT = '#8f8272';
+import { ThemedSwitch } from '../ThemedSwitch';
+import { makeStyles, useTheme } from '../../context/ThemeContext';
+import { fonts, spacing } from '../../lib/theme';
 
 export function LocationTab({ tripId, userId }: { tripId: string; userId: string }) {
+  const { colors } = useTheme();
+  const styles = useStyles();
   const [members, setMembers] = useState<MemberLocation[]>([]);
   const [sharing, setSharing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,9 +44,10 @@ export function LocationTab({ tripId, userId }: { tripId: string; userId: string
     }
   };
 
+  const dotColors = [colors.buttonFill, colors.successFill];
   let shareIdx = 0;
   const rows = members.map((m) => {
-    const color = m.sharingEnabled ? DOT_COLORS[shareIdx++ % DOT_COLORS.length] : OFF_DOT;
+    const color = m.sharingEnabled ? dotColors[shareIdx++ % dotColors.length] : colors.successFill;
     return { ...m, color };
   });
   const sharingRows = rows.filter((r) => r.sharingEnabled);
@@ -79,13 +81,7 @@ export function LocationTab({ tripId, userId }: { tripId: string; userId: string
 
       <View style={styles.shareRow}>
         <Text style={styles.shareLabel}>Share my location</Text>
-        <Switch
-          value={sharing}
-          onValueChange={onToggle}
-          trackColor={{ true: colors.buttonFill, false: '#d9d2c6' }}
-          thumbColor="#fffdf8"
-          ios_backgroundColor="#d9d2c6"
-        />
+        <ThemedSwitch value={sharing} onValueChange={onToggle} />
       </View>
 
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -108,7 +104,7 @@ export function LocationTab({ tripId, userId }: { tripId: string; userId: string
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => ({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   map: {
@@ -158,4 +154,4 @@ const styles = StyleSheet.create({
     fontFamily: fonts.regular,
     color: colors.textSecondary,
   },
-});
+}));
