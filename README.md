@@ -41,6 +41,24 @@ npm start         # dev server + QR for Expo Go
 npm run ios       # or: npm run android / npm run web
 ```
 
+### Install on your iPhone (standalone)
+
+Builds a Release app with the JS bundle embedded (no dev server needed) and installs it
+with Xcode's `devicectl`, which works over Wi-Fi (Expo CLI's installer can hang on
+wireless devices). The iPhone must be paired with Xcode, have Developer Mode on, and
+stay unlocked. Run `npx expo prebuild --platform ios` first if `ios/` doesn't exist.
+
+```bash
+xcodebuild -workspace ios/Friendcation.xcworkspace -scheme Friendcation \
+  -configuration Release -destination 'generic/platform=iOS' \
+  -derivedDataPath ios/build -allowProvisioningUpdates build
+xcrun devicectl list devices    # copy your iPhone's Identifier
+xcrun devicectl device install app --device <identifier> \
+  ios/build/Build/Products/Release-iphoneos/Friendcation.app
+```
+
+> With a free Apple ID the install **expires after 7 days** — rerun the commands to reinstall.
+
 ## Project structure
 
 ```
@@ -48,6 +66,7 @@ app/                   Expo Router routes (_layout.tsx, index.tsx)
 context/AuthContext    Supabase session provider (useAuth hook)
 lib/supabase.ts        Supabase client
 lib/theme.ts           Design tokens (terracotta accent, sage success)
+plugins/               Local Expo config plugins (iOS 27 UIScene adoption)
 supabase/migrations/   Version-controlled SQL (schema, trigger, storage, RLS)
 ```
 

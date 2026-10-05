@@ -8,7 +8,9 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.avchoudh.friendcation",
+      "appleTeamId": "8XL33P2GFZ"
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +29,8 @@
       "expo-router",
       "expo-status-bar",
       "expo-font",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "./plugins/withSceneLifecycle"
     ]
   }
 }
