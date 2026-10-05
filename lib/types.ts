@@ -53,6 +53,8 @@ export type ExpenseListItem = {
   paid_by: string | null;
   payerName: string | null;
   expense_date: string | null;
+  /** Each member's share, in integer paise. */
+  splits: { userId: string; sharePaise: number }[];
 };
 
 export type MemberLocation = {

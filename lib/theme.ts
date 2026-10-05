@@ -33,6 +33,7 @@ const light = {
   switchTrackOff: '#d9d2c6',
   switchThumbOff: '#fffdf8',
   scrim: 'rgba(43,36,29,0.35)', // bottom-sheet overlay
+  dialogScrim: 'rgba(43,36,29,0.45)', // confirmation dialog over a sheet
   shadow: '#000000',
   viewerBackground: '#0e0b07', // full-screen attachment viewer (dark in both modes)
   onViewer: '#ffffff',
@@ -63,6 +64,7 @@ const dark: ThemeColors = {
   switchTrackOff: '#51463b',
   switchThumbOff: '#f5efe6',
   scrim: 'rgba(0,0,0,0.55)', // stays a dark translucent overlay
+  dialogScrim: 'rgba(0,0,0,0.62)',
   shadow: '#000000',
   viewerBackground: '#0e0b07',
   onViewer: '#ffffff',

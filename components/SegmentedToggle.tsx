@@ -22,7 +22,7 @@ export function SegmentedToggle<T extends string>({
 }: Props<T>) {
   const styles = useStyles();
   return (
-    <View style={[styles.track, style]}>
+    <View style={[styles.track, compact && styles.trackCompact, style]}>
       {options.map((opt) => {
         const active = opt.value === value;
         return (
@@ -31,7 +31,12 @@ export function SegmentedToggle<T extends string>({
             onPress={() => onChange(opt.value)}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
-            style={[styles.segment, compact && styles.segmentCompact, active && styles.segmentActive]}
+            style={[
+              styles.segment,
+              compact && styles.segmentCompact,
+              active && styles.segmentActive,
+              active && compact && styles.segmentActiveCompact,
+            ]}
           >
             <Text
               style={[
@@ -68,6 +73,8 @@ const useStyles = makeStyles((colors) => ({
     borderColor: colors.border,
   },
   segmentCompact: { paddingVertical: 6, borderRadius: 8 },
+  trackCompact: { borderRadius: 10, padding: 3 },
+  segmentActiveCompact: { borderWidth: 0.5 },
   label: { fontSize: 14 },
   labelCompact: { fontSize: 13 },
   labelActive: { fontFamily: fonts.semibold, color: colors.text },

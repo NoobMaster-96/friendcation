@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { computeNetBalance, formatMoney, listExpenses } from '../../lib/expenses';
 import { listTripMembers, type TripMember } from '../../lib/members';
 import type { ExpenseListItem } from '../../lib/types';
-import { AddExpenseSheet } from '../AddExpenseSheet';
+import { ExpenseSheet } from '../ExpenseSheet';
 import { makeStyles, useTheme } from '../../context/ThemeContext';
 import { fonts, radius, spacing } from '../../lib/theme';
 
@@ -20,6 +20,12 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
+  // null = add; otherwise the expense being edited.
+  const [sheetExpense, setSheetExpense] = useState<ExpenseListItem | null>(null);
+  const openSheet = (expense: ExpenseListItem | null) => {
+    setSheetExpense(expense);
+    setSheetOpen(true);
+  };
 
   const load = useCallback(async () => {
     try {
@@ -78,20 +84,30 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
         ) : (
           <View style={styles.list}>
             {expenses.map((e, i) => (
-              <View key={e.id} style={[styles.row, i > 0 && styles.rowDivider]}>
+              <Pressable
+                key={e.id}
+                onPress={() => openSheet(e)}
+                accessibilityRole="button"
+                accessibilityHint="Opens the expense to edit or delete it"
+                style={({ pressed }) => [
+                  styles.row,
+                  i < expenses.length - 1 && styles.rowDivider,
+                  pressed && styles.rowPressed,
+                ]}
+              >
                 <View style={styles.rowLeft}>
                   <Text style={styles.desc}>{e.description}</Text>
                   <Text style={styles.payer}>Paid by {e.payerName ?? 'someone'}</Text>
                 </View>
                 <Text style={styles.amount}>{formatMoney(e.amount, e.currency)}</Text>
-              </View>
+              </Pressable>
             ))}
           </View>
         )}
       </ScrollView>
 
       <Pressable
-        onPress={() => setSheetOpen(true)}
+        onPress={() => openSheet(null)}
         accessibilityRole="button"
         accessibilityLabel="Add expense"
         style={({ pressed }) => [
@@ -103,13 +119,14 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
         <Ionicons name="add" size={28} color={colors.buttonText} />
       </Pressable>
 
-      <AddExpenseSheet
+      <ExpenseSheet
         visible={sheetOpen}
+        expense={sheetExpense}
         tripId={tripId}
         userId={userId}
         members={members}
         onClose={() => setSheetOpen(false)}
-        onSaved={load}
+        onChanged={load}
       />
     </View>
   );
@@ -138,11 +155,12 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: 'space-between',
     paddingVertical: 14,
   },
-  rowDivider: { borderTopWidth: 1, borderTopColor: colors.border },
+  rowDivider: { borderBottomWidth: 0.5, borderBottomColor: colors.border },
+  rowPressed: { opacity: 0.6 },
   rowLeft: { flex: 1, paddingRight: spacing.md },
-  desc: { fontSize: 15, fontFamily: fonts.medium, color: colors.text },
-  payer: { marginTop: 2, fontSize: 13, fontFamily: fonts.regular, color: colors.textMuted },
-  amount: { fontSize: 15, fontFamily: fonts.medium, color: colors.text },
+  desc: { fontSize: 14, fontFamily: fonts.medium, color: colors.text },
+  payer: { marginTop: 2, fontSize: 12, fontFamily: fonts.regular, color: colors.textSecondary },
+  amount: { fontSize: 14, fontFamily: fonts.medium, color: colors.text },
   empty: { alignItems: 'center', paddingTop: spacing.xl },
   emptyTitle: { fontSize: 18, fontFamily: fonts.semibold, color: colors.text },
   emptyText: {

@@ -7,7 +7,8 @@ export async function listExpenses(tripId: string): Promise<ExpenseListItem[]> {
     .from('expenses')
     .select(
       'id,description,amount,currency,paid_by,expense_date,created_at,' +
-        'payer:user_profiles!paid_by(first_name)'
+        'payer:user_profiles!paid_by(first_name),' +
+        'expense_splits(user_id, share_amount)'
     )
     .eq('trip_id', tripId)
     .order('created_at', { ascending: false })
@@ -24,6 +25,10 @@ export async function listExpenses(tripId: string): Promise<ExpenseListItem[]> {
       paid_by: r.paid_by,
       payerName: payer?.first_name ?? null,
       expense_date: r.expense_date,
+      splits: (r.expense_splits ?? []).map((s: any) => ({
+        userId: s.user_id,
+        sharePaise: toPaise(Number(s.share_amount)),
+      })),
     };
   });
 }
@@ -67,7 +72,7 @@ export function formatMoney(amount: number, currency = 'INR'): string {
 }
 
 // ============================================================
-// Add expense — money is handled in integer paise so splits add up exactly.
+// Add / edit / delete — money is handled in integer paise so splits add up exactly.
 // ============================================================
 
 export function toPaise(value: string | number): number {
@@ -83,37 +88,35 @@ export function splitEvenly(totalPaise: number, count: number): number[] {
   return Array.from({ length: count }, (_, i) => base + (i < remainder ? 1 : 0));
 }
 
-export type NewExpense = {
+export type ExpenseInput = {
   tripId: string;
-  createdBy: string;
+  /** Omit to create a new expense. */
+  expenseId?: string | null;
   paidBy: string;
   description: string;
   amountPaise: number;
   splits: { userId: string; sharePaise: number }[];
 };
 
-export async function createExpense(input: NewExpense): Promise<void> {
-  const { data, error } = await supabase
-    .from('expenses')
-    .insert({
-      trip_id: input.tripId,
-      created_by: input.createdBy,
-      paid_by: input.paidBy,
-      description: input.description.trim(),
-      amount: input.amountPaise / 100,
-    })
-    .select('id')
-    .single();
+/** Creates or updates an expense and its splits atomically (save_expense RPC, migration 0009). */
+export async function saveExpense(input: ExpenseInput): Promise<string> {
+  const { data, error } = await supabase.rpc('save_expense', {
+    p_trip_id: input.tripId,
+    p_expense_id: input.expenseId ?? null,
+    p_description: input.description.trim(),
+    p_amount: input.amountPaise / 100,
+    p_paid_by: input.paidBy,
+    p_splits: input.splits
+      .filter((s) => s.sharePaise > 0)
+      .map((s) => ({ user_id: s.userId, share: s.sharePaise / 100 })),
+  });
   if (error) throw error;
-  const expenseId = data.id as string;
+  return data as string;
+}
 
-  const rows = input.splits
-    .filter((s) => s.sharePaise > 0)
-    .map((s) => ({ expense_id: expenseId, user_id: s.userId, share_amount: s.sharePaise / 100 }));
-  const { error: splitError } = await supabase.from('expense_splits').insert(rows);
-  if (splitError) {
-    // PostgREST has no multi-table transaction: don't leave an expense without its splits.
-    await supabase.from('expenses').delete().eq('id', expenseId);
-    throw splitError;
-  }
+/** Deletes an expense; its splits go with it (on delete cascade). */
+export async function deleteExpense(expenseId: string): Promise<void> {
+  const { data, error } = await supabase.from('expenses').delete().eq('id', expenseId).select('id');
+  if (error) throw error;
+  if (!data?.length) throw new Error('This expense could not be deleted.');
 }

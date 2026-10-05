@@ -17,6 +17,7 @@ Run these against your Supabase project **in order**:
 | `migrations/0006_itinerary_item_participants.sql` | `itinerary_item_participants` join table (the "People" on an itinerary item) | Always |
 | `migrations/0007_itinerary_attachments_storage.sql` | `storage.objects` read/insert/delete policies for the attachments bucket | **Always** (attachment upload fails without it) |
 | `migrations/0008_enable_rls.sql` | **Row Level Security** for every table, membership helpers, and the `join_trip_by_code` / `add_trip_member_by_email` RPCs | **Before any real user** |
+| `migrations/0009_expenses_editable_by_members.sql` | Any trip member can edit/delete expenses and splits; atomic `save_expense()` RPC | After 0008 |
 
 ### How to apply
 
