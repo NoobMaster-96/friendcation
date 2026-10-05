@@ -4,7 +4,8 @@ A mobile app for a small friend group (~6–7 people) to coordinate a trip toget
 shared itinerary, live location, and expense splitting in one place, instead of
 juggling WhatsApp + Google Maps + Splitwise + TripIt.
 
-Solo/personal project. Invite-only (referral-based signup), not published to app stores.
+Solo/personal project. Invite-only (referral-based signup); shared privately through TestFlight
+and Google Play internal testing, not listed publicly.
 
 ## Stack
 
@@ -59,6 +60,47 @@ xcrun devicectl device install app --device <identifier> \
 
 > With a free Apple ID the install **expires after 7 days** — rerun the commands to reinstall.
 
+## Release to friends (TestFlight + Play internal testing)
+
+Store builds are made in the cloud with [EAS](https://docs.expo.dev/build/introduction/) using
+`eas.json` (`production` profile; build numbers auto-increment on EAS). Nothing is listed publicly.
+
+> ⚠️ Apply the RLS migration before inviting anyone — the anon key ships inside the app.
+
+**One-time setup**
+
+1. Accounts: Apple Developer Program (paid), Google Play Console, and a free Expo account.
+2. `npx eas-cli@latest login`, then `npx eas-cli@latest init` to link the project.
+3. `.env` isn't committed, so give EAS the Supabase settings:
+   ```bash
+   npx eas-cli@latest env:set --environment production --visibility plaintext \
+     --name EXPO_PUBLIC_SUPABASE_URL --value <project URL>
+   npx eas-cli@latest env:set --environment production --visibility plaintext \
+     --name EXPO_PUBLIC_SUPABASE_ANON_KEY --value <anon key>
+   ```
+4. Android: create the app in Play Console and give EAS a
+   [Google Service Account key](https://expo.fyi/creating-google-service-account).
+
+**iOS → TestFlight**
+
+```bash
+npx eas-cli@latest build --platform ios --profile production --auto-submit
+```
+
+Then in App Store Connect → TestFlight, add friends as external testers (the first build gets a
+short beta review). TestFlight builds expire after 90 days.
+
+**Android → Play internal testing**
+
+```bash
+npx eas-cli@latest build --platform android --profile production
+npx eas-cli@latest submit --platform android
+```
+
+The first submission creates a release on the internal testing track (up to 100 testers, no
+review). Add testers' Google accounts in Play Console and share the opt-in link. The Play listing
+icon is `assets/store/playstore-512.png`.
+
 ## Project structure
 
 ```
@@ -67,6 +109,8 @@ context/AuthContext    Supabase session provider (useAuth hook)
 lib/supabase.ts        Supabase client
 lib/theme.ts           Design tokens (terracotta accent, sage success)
 plugins/               Local Expo config plugins (iOS 27 UIScene adoption)
+assets/                App icons (light/dark, Android adaptive + themed), splash, store icon
+eas.json               EAS build/submit profiles (preview APK, production store builds)
 supabase/migrations/   Version-controlled SQL (schema, trigger, storage, RLS)
 ```
 
