@@ -13,6 +13,7 @@
       "appleTeamId": "8XL33P2GFZ"
     },
     "android": {
+      "package": "com.avchoudh.friendcation",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
