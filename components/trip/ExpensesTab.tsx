@@ -1,28 +1,37 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { computeNetBalance, formatMoney, listExpenses } from '../../lib/expenses';
+import { listTripMembers, type TripMember } from '../../lib/members';
 import type { ExpenseListItem } from '../../lib/types';
+import { AddExpenseSheet } from '../AddExpenseSheet';
 import { makeStyles, useTheme } from '../../context/ThemeContext';
 import { fonts, radius, spacing } from '../../lib/theme';
 
 export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string }) {
   const { colors } = useTheme();
   const styles = useStyles();
+  const insets = useSafeAreaInsets();
   const [expenses, setExpenses] = useState<ExpenseListItem[]>([]);
+  const [members, setMembers] = useState<TripMember[]>([]);
   const [net, setNet] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
       setError(null);
-      const [list, balance] = await Promise.all([
+      const [list, balance, memberList] = await Promise.all([
         listExpenses(tripId),
         computeNetBalance(tripId, userId),
+        listTripMembers(tripId),
       ]);
       setExpenses(list);
       setNet(balance);
+      setMembers(memberList);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load expenses.');
     } finally {
@@ -49,37 +58,62 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
   const label = settled ? 'All settled up' : net > 0 ? 'You are owed' : 'You owe';
 
   return (
-    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.summary}>
-        <Text style={styles.summaryLabel}>{label}</Text>
-        <Text style={styles.summaryAmount}>{formatMoney(net, currency)}</Text>
-      </View>
-
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-
-      {expenses.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>No expenses yet</Text>
-          <Text style={styles.emptyText}>Tap + to log the first one.</Text>
+    <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.summary}>
+          <Text style={styles.summaryLabel}>{label}</Text>
+          <Text style={styles.summaryAmount}>{formatMoney(net, currency)}</Text>
         </View>
-      ) : (
-        <View style={styles.list}>
-          {expenses.map((e, i) => (
-            <View key={e.id} style={[styles.row, i > 0 && styles.rowDivider]}>
-              <View style={styles.rowLeft}>
-                <Text style={styles.desc}>{e.description}</Text>
-                <Text style={styles.payer}>Paid by {e.payerName ?? 'someone'}</Text>
+
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+
+        {expenses.length === 0 ? (
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>No expenses yet</Text>
+            <Text style={styles.emptyText}>Tap + to log the first one.</Text>
+          </View>
+        ) : (
+          <View style={styles.list}>
+            {expenses.map((e, i) => (
+              <View key={e.id} style={[styles.row, i > 0 && styles.rowDivider]}>
+                <View style={styles.rowLeft}>
+                  <Text style={styles.desc}>{e.description}</Text>
+                  <Text style={styles.payer}>Paid by {e.payerName ?? 'someone'}</Text>
+                </View>
+                <Text style={styles.amount}>{formatMoney(e.amount, e.currency)}</Text>
               </View>
-              <Text style={styles.amount}>{formatMoney(e.amount, e.currency)}</Text>
-            </View>
-          ))}
-        </View>
-      )}
-    </ScrollView>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      <Pressable
+        onPress={() => setSheetOpen(true)}
+        accessibilityRole="button"
+        accessibilityLabel="Add expense"
+        style={({ pressed }) => [
+          styles.fab,
+          { bottom: insets.bottom + spacing.lg },
+          pressed && styles.fabPressed,
+        ]}
+      >
+        <Ionicons name="add" size={28} color={colors.buttonText} />
+      </Pressable>
+
+      <AddExpenseSheet
+        visible={sheetOpen}
+        tripId={tripId}
+        userId={userId}
+        members={members}
+        onClose={() => setSheetOpen(false)}
+        onSaved={load}
+      />
+    </View>
   );
 }
 
 const useStyles = makeStyles((colors) => ({
+  container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: 120 },
   summary: {
@@ -113,4 +147,20 @@ const useStyles = makeStyles((colors) => ({
     fontFamily: fonts.regular,
     color: colors.textSecondary,
   },
+  fab: {
+    position: 'absolute',
+    right: spacing.lg,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.buttonFill,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.shadow,
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 6,
+  },
+  fabPressed: { opacity: 0.85 },
 }));

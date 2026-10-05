@@ -9,9 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { supabase } from '../../../lib/supabase';
 import { formatDateRange } from '../../../lib/trips';
 import type { Trip } from '../../../lib/types';
@@ -33,7 +31,6 @@ export default function TripDetail() {
   const { colors } = useTheme();
   const styles = useStyles();
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -87,7 +84,6 @@ export default function TripDetail() {
 
   const tripId = (id as string) ?? '';
   const userId = user?.id ?? '';
-  const showFab = active === 2;
 
   if (loadingTrip) {
     return (
@@ -164,26 +160,6 @@ export default function TripDetail() {
         </View>
       </Animated.ScrollView>
 
-      {showFab ? (
-        <Pressable
-          onPress={() =>
-            router.push({
-              pathname: '/add-expense',
-              params: { tripId },
-            })
-          }
-          accessibilityRole="button"
-          accessibilityLabel="Add expense"
-          style={({ pressed }) => [
-            styles.fab,
-            { bottom: insets.bottom + spacing.lg },
-            pressed && styles.fabPressed,
-          ]}
-        >
-          <Ionicons name="add" size={28} color={colors.buttonText} />
-        </Pressable>
-      ) : null}
-
       {trip ? (
         <EditTripSheet
           trip={trip}
@@ -216,20 +192,4 @@ const useStyles = makeStyles((colors) => ({
     borderRadius: 1,
     backgroundColor: colors.text,
   },
-  fab: {
-    position: 'absolute',
-    right: spacing.lg,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: colors.buttonFill,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.shadow,
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
-  },
-  fabPressed: { opacity: 0.9 },
 }));
