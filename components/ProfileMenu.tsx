@@ -111,7 +111,7 @@ const useStyles = makeStyles((colors) => ({
     justifyContent: 'center',
   },
   pressed: { opacity: 0.7 },
-  initials: { fontSize: 15, fontFamily: fonts.semibold, color: colors.text },
+  initials: { fontSize: 15, fontFamily: fonts.semibold, color: colors.textAccent },
   backdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   menu: {
     position: 'absolute',

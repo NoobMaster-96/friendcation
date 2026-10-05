@@ -44,10 +44,10 @@ export function LocationTab({ tripId, userId }: { tripId: string; userId: string
     }
   };
 
-  const dotColors = [colors.buttonFill, colors.successFill];
+  const dotColors = [colors.mapDotPrimary, colors.successFill];
   let shareIdx = 0;
   const rows = members.map((m) => {
-    const color = m.sharingEnabled ? dotColors[shareIdx++ % dotColors.length] : colors.successFill;
+    const color = m.sharingEnabled ? dotColors[shareIdx++ % dotColors.length] : colors.mapDotOff;
     return { ...m, color };
   });
   const sharingRows = rows.filter((r) => r.sharingEnabled);

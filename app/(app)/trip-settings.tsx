@@ -391,7 +391,7 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 13, fontFamily: fonts.semibold, color: colors.text },
+  avatarText: { fontSize: 13, fontFamily: fonts.semibold, color: colors.textAccent },
   memberName: { flex: 1, fontSize: 15, fontFamily: fonts.medium, color: colors.text },
   ownerTag: { fontSize: 13, fontFamily: fonts.medium, color: colors.textSecondary },
   removeText: { fontSize: 14, fontFamily: fonts.semibold, color: colors.danger },

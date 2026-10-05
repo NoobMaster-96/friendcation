@@ -13,11 +13,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SegmentedToggle } from '../SegmentedToggle';
+import { AvatarStack } from '../AvatarStack';
 import { ItineraryItemSheet } from '../ItineraryItemSheet';
 import { ItineraryDetailSheet } from '../ItineraryDetailSheet';
 import { formatItemTime, isNowItem, listItinerary } from '../../lib/itinerary';
 import { listTripMembers, type TripMember } from '../../lib/members';
-import type { ItineraryItemDetail, ItineraryListItem } from '../../lib/types';
+import type {
+  ItineraryItemDetail,
+  ItineraryListItem,
+  ItineraryParticipant,
+} from '../../lib/types';
 import { makeStyles, useTheme } from '../../context/ThemeContext';
 import { fonts, spacing } from '../../lib/theme';
 
@@ -68,10 +73,23 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
   );
 
   const now = new Date();
+
+  // An item's people. Items created before per-item people existed have no
+  // participant rows: a shared one involves the whole group, a personal one its creator.
+  const peopleFor = (it: ItineraryListItem): ItineraryParticipant[] => {
+    if (it.participants.length) return it.participants;
+    if (it.item_type === 'shared') {
+      return members.map(({ userId: id, name, initials }) => ({ userId: id, name, initials }));
+    }
+    return it.created_by
+      ? [{ userId: it.created_by, name: it.creatorName ?? 'Personal', initials: '' }]
+      : [];
+  };
+
   const visible =
     filter === 'all'
       ? items
-      : items.filter((it) => it.participantIds.includes(userId));
+      : items.filter((it) => peopleFor(it).some((p) => p.userId === userId));
 
   const nowIds = new Set(visible.filter((it) => isNowItem(it, now)).map((it) => it.id));
   const firstNow = visible.find((it) => nowIds.has(it.id));
@@ -150,6 +168,7 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
             <View key={item.id} onLayout={(e) => onItemLayout(item.id, e)}>
               <ItineraryCard
                 item={item}
+                people={peopleFor(item)}
                 isNow={nowIds.has(item.id)}
                 now={now}
                 onPress={() => {
@@ -219,11 +238,13 @@ export function ItineraryTab({ tripId, userId }: { tripId: string; userId: strin
 
 function ItineraryCard({
   item,
+  people,
   isNow,
   now,
   onPress,
 }: {
   item: ItineraryListItem;
+  people: ItineraryParticipant[];
   isNow: boolean;
   now: Date;
   onPress: () => void;
@@ -252,16 +273,24 @@ function ItineraryCard({
 
       <Text style={styles.title}>{item.title}</Text>
 
-      {item.participantNames.length > 1 ? (
-        <Text style={styles.subtitle}>Shared</Text>
-      ) : (
+      {people.length > 1 ? (
+        <View style={styles.peopleRow}>
+          <AvatarStack
+            initials={people.map((p) => p.initials)}
+            total={people.length}
+            max={3}
+            size={22}
+            overlap={7}
+            ringWidth={1.5}
+            ringColor={colors.background}
+          />
+        </View>
+      ) : people.length === 1 ? (
         <View style={styles.subRow}>
           <Ionicons name="person" size={12} color={colors.textMuted} />
-          <Text style={styles.subtitle}>
-            {item.participantNames[0] ?? item.creatorName ?? 'Personal'}
-          </Text>
+          <Text style={styles.subtitle}>{people[0].name.split(' ')[0]}</Text>
         </View>
-      )}
+      ) : null}
     </Pressable>
   );
 }
@@ -306,6 +335,7 @@ const useStyles = makeStyles((colors) => ({
   attachCount: { fontSize: 12, fontFamily: fonts.medium, color: colors.textSecondary },
   title: { marginTop: 8, fontSize: 15, fontFamily: fonts.semibold, color: colors.text },
   subRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  peopleRow: { flexDirection: 'row', marginTop: 8 },
   subtitle: { marginTop: 4, fontSize: 13, fontFamily: fonts.regular, color: colors.textSecondary },
   pill: {
     position: 'absolute',

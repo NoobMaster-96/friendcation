@@ -5,25 +5,30 @@
  *
  * Token ↔ design-spec names: background = surface-2, surface = surface-1,
  * buttonFill = fill-primary, buttonText = on-primary, accentTint = bg-accent,
- * successFill = fill-success, navBackground = device/nav background.
+ * successFill = fill-success, navBackground = device/nav header band.
+ * Green is reserved for positive money states (textSuccess) and the second
+ * map location dot (successFill) — never for avatars.
  */
 export type ColorScheme = 'light' | 'dark';
 
 const light = {
   background: '#fffdf8', // surface-2: page background
-  surface: '#f6f1e8', // surface-1: cards, inputs
+  surface: '#f6f1e8', // surface-1: cards, inputs, "+N" avatar overflow
+  outerBackground: '#fffdf8', // app outer background (behind screens)
   border: 'rgba(64,48,32,0.1)',
   borderStrong: 'rgba(64,48,32,0.22)',
   text: '#2b241d', // text-primary (also nav title + icons)
   textSecondary: 'rgba(43,36,29,0.58)',
   textMuted: 'rgba(43,36,29,0.36)',
-  buttonFill: '#332a20', // fill-primary: buttons, FAB, active dots, "now" border
+  textAccent: '#2b241d', // initials on bg-accent avatar circles
+  textSuccess: '#2b241d', // "You are owed" amount (stays primary text in light)
+  buttonFill: '#332a20', // fill-primary: buttons, FAB, pill, active dots, "now" border
   buttonText: '#fffdf8', // on-primary
-  onPrimarySubtle: 'rgba(255,253,248,0.25)', // e.g. avatar on a selected chip
-  accentTint: '#f0e9dd', // bg-accent: "now" items, selected chips, invite code
-  successFill: '#8f8272', // fill-success: second location dot
-  navBackground: '#F3EEE3', // device / nav bar background
-  success: '#5d7a4e',
+  accentTint: '#f0e9dd', // bg-accent: "now" items, selected chips, invite code, avatars
+  successFill: '#8f8272', // fill-success: second map location dot
+  mapDotPrimary: '#332a20', // first map location dot
+  mapDotOff: '#8f8272', // location dot for members with sharing off
+  navBackground: '#F3EEE3', // device / nav header band
   danger: '#a3402f', // errors, destructive actions
   switchTrackOff: '#d9d2c6',
   switchThumbOff: '#fffdf8',
@@ -35,24 +40,28 @@ const light = {
 
 export type ThemeColors = typeof light;
 
+// Warm dark, not pure black; shades separated for contrast.
 const dark: ThemeColors = {
-  background: '#1f1a16',
-  surface: '#2a241e',
-  border: 'rgba(255,240,220,0.1)',
-  borderStrong: 'rgba(255,240,220,0.22)',
-  text: '#f3ece2',
-  textSecondary: 'rgba(243,236,226,0.62)',
-  textMuted: 'rgba(243,236,226,0.38)',
-  buttonFill: '#f0e6d8', // primary buttons become light cream…
-  buttonText: '#1f1a16', // …with dark text
-  onPrimarySubtle: 'rgba(31,26,22,0.14)',
-  accentTint: '#3a3128',
-  successFill: '#a89a88',
-  navBackground: '#1a1612',
-  success: '#9cb98a',
+  background: '#15120f',
+  surface: '#2f2821',
+  outerBackground: '#0b0a08',
+  border: 'rgba(255,238,214,0.16)',
+  borderStrong: 'rgba(255,238,214,0.34)',
+  text: '#f5efe6',
+  textSecondary: 'rgba(245,239,230,0.72)',
+  textMuted: 'rgba(245,239,230,0.48)',
+  textAccent: '#f2d9bd',
+  textSuccess: '#b9d3a8',
+  buttonFill: '#efe3d1', // primary buttons become light cream…
+  buttonText: '#15120f', // …with dark text
+  accentTint: '#4a3c2e',
+  successFill: '#9fbf8c', // green
+  mapDotPrimary: '#e8b98a', // amber
+  mapDotOff: 'rgba(245,239,230,0.48)',
+  navBackground: '#221d18',
   danger: '#e08a76',
-  switchTrackOff: '#4a4037',
-  switchThumbOff: '#f3ece2',
+  switchTrackOff: '#51463b',
+  switchThumbOff: '#f5efe6',
   scrim: 'rgba(0,0,0,0.55)', // stays a dark translucent overlay
   shadow: '#000000',
   viewerBackground: '#0e0b07',

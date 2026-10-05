@@ -353,17 +353,18 @@ const useStyles = makeStyles((colors) => ({
   },
   chipSelected: { backgroundColor: colors.accentTint, borderColor: colors.borderStrong },
   chipLabel: { fontSize: 14, fontFamily: fonts.medium, color: colors.text },
+  // Ring in the page colour keeps the circle visible on bg-accent (selected) chips.
   avatar: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: colors.accentTint,
+    borderWidth: 1.5,
+    borderColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 11, fontFamily: fonts.semibold, color: colors.text },
+  avatarText: { fontSize: 11, fontFamily: fonts.semibold, color: colors.textAccent },
   splitHeader: {
     flexDirection: 'row',
     alignItems: 'center',

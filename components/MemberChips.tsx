@@ -69,8 +69,8 @@ function Chip({
       ]}
     >
       {initials ? (
-        <View style={[styles.avatar, selected && styles.avatarSelected]}>
-          <Text style={[styles.avatarText, selected && styles.avatarTextSelected]}>{initials}</Text>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>{initials}</Text>
         </View>
       ) : null}
       <Text style={[styles.label, selected ? styles.labelSelected : styles.labelUnselected]}>
@@ -103,9 +103,7 @@ const useStyles = makeStyles((colors) => ({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarSelected: { backgroundColor: colors.onPrimarySubtle },
-  avatarText: { fontSize: 11, fontFamily: fonts.semibold, color: colors.text },
-  avatarTextSelected: { color: colors.buttonText },
+  avatarText: { fontSize: 11, fontFamily: fonts.semibold, color: colors.textAccent },
   label: { fontSize: 14, fontFamily: fonts.medium },
   labelSelected: { color: colors.buttonText },
   labelUnselected: { color: colors.text },

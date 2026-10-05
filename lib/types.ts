@@ -40,8 +40,8 @@ export type ItineraryListItem = {
   item_type: ItemType;
   created_by: string | null;
   creatorName: string | null;
-  participantIds: string[];
-  participantNames: string[];
+  /** The item's tagged people (itinerary_item_participants). */
+  participants: ItineraryParticipant[];
   attachmentCount: number;
 };
 

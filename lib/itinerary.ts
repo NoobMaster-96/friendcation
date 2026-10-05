@@ -14,8 +14,20 @@ const ATTACHMENT_BUCKET = 'itinerary-attachments';
 const COLUMNS =
   'id,trip_id,title,location_name,start_time,end_time,notes,item_type,created_by,' +
   'creator:user_profiles!created_by(first_name),' +
-  'itinerary_item_participants(user_id, user_profiles(first_name)),' +
+  'itinerary_item_participants(user_id, user_profiles(first_name, last_name)),' +
   'itinerary_attachments(count)';
+
+/** An itinerary_item_participants row (with its embedded profile) → a participant. */
+function toParticipant(row: any): ItineraryParticipant {
+  const p = Array.isArray(row.user_profiles) ? row.user_profiles[0] : row.user_profiles;
+  const first = p?.first_name?.trim() ?? '';
+  const last = p?.last_name?.trim() ?? '';
+  return {
+    userId: row.user_id,
+    name: `${first} ${last}`.trim() || 'Member',
+    initials: ((first[0] ?? '') + (last[0] ?? '')).toUpperCase() || '?',
+  };
+}
 
 export async function listItinerary(tripId: string): Promise<ItineraryListItem[]> {
   const { data, error } = await supabase
@@ -30,16 +42,6 @@ export async function listItinerary(tripId: string): Promise<ItineraryListItem[]
     const attachmentCount = Array.isArray(r.itinerary_attachments)
       ? r.itinerary_attachments[0]?.count ?? 0
       : 0;
-    const participantRows: any[] = Array.isArray(r.itinerary_item_participants)
-      ? r.itinerary_item_participants
-      : [];
-    const participantIds: string[] = [];
-    const participantNames: string[] = [];
-    for (const p of participantRows) {
-      const prof = Array.isArray(p.user_profiles) ? p.user_profiles[0] : p.user_profiles;
-      participantIds.push(p.user_id);
-      participantNames.push(prof?.first_name ?? 'Member');
-    }
     return {
       id: r.id,
       trip_id: r.trip_id,
@@ -51,8 +53,7 @@ export async function listItinerary(tripId: string): Promise<ItineraryListItem[]
       item_type: r.item_type,
       created_by: r.created_by,
       creatorName: creator?.first_name ?? null,
-      participantIds,
-      participantNames,
+      participants: (r.itinerary_item_participants ?? []).map(toParticipant),
       attachmentCount,
     };
   });
@@ -170,16 +171,7 @@ export async function getItineraryItemDetail(itemId: string): Promise<ItineraryI
   const row = data as any;
 
   const participants: ItineraryParticipant[] = (row.itinerary_item_participants ?? []).map(
-    (r: any) => {
-      const p = Array.isArray(r.user_profiles) ? r.user_profiles[0] : r.user_profiles;
-      const first = p?.first_name?.trim() ?? '';
-      const last = p?.last_name?.trim() ?? '';
-      return {
-        userId: r.user_id,
-        name: `${first} ${last}`.trim() || 'Member',
-        initials: ((first[0] ?? '') + (last[0] ?? '')).toUpperCase() || '?',
-      };
-    }
+    toParticipant
   );
 
   const attachments: ItineraryAttachment[] = (row.itinerary_attachments ?? []).map((a: any) => ({

@@ -69,7 +69,7 @@ function RootNavigator() {
       colors: {
         ...base.colors,
         primary: colors.buttonFill,
-        background: colors.background,
+        background: colors.outerBackground,
         card: colors.navBackground,
         text: colors.text,
         border: colors.border,

@@ -1,31 +1,55 @@
 import { Text, View } from 'react-native';
-import { makeStyles } from '../context/ThemeContext';
+import { makeStyles, useTheme } from '../context/ThemeContext';
 import { fonts } from '../lib/theme';
 
 type Props = {
   initials: string[];
   total: number;
-  /** how many initial chips to show before collapsing into "+N" */
+  /** How many circles to show before collapsing the rest into "+N". */
   max?: number;
+  size?: number;
+  /** How far each circle overlaps the previous one. */
+  overlap?: number;
+  /** Ring around each circle so overlapping circles read as separate; defaults to surface-1. */
+  ringColor?: string;
+  ringWidth?: number;
 };
 
-const CHIP = 24;
-
-export function AvatarStack({ initials, total, max = 2 }: Props) {
+/** Overlapping initials circles (bg-accent / text-accent) with a "+N" overflow circle. */
+export function AvatarStack({
+  initials,
+  total,
+  max = 2,
+  size = 24,
+  overlap = 8,
+  ringColor,
+  ringWidth = 2,
+}: Props) {
+  const { colors } = useTheme();
   const styles = useStyles();
   const shown = initials.slice(0, max);
   const extra = total - shown.length;
+  const circle = {
+    width: size,
+    height: size,
+    borderRadius: size / 2,
+    borderWidth: ringWidth,
+    borderColor: ringColor ?? colors.surface,
+  };
+  const fontSize = Math.round(size * 0.9) / 2;
 
   return (
     <View style={styles.row}>
       {shown.map((initial, i) => (
-        <View key={i} style={[styles.chip, i > 0 && styles.overlap]}>
-          <Text style={styles.initial}>{initial}</Text>
+        <View key={i} style={[styles.circle, circle, i > 0 && { marginLeft: -overlap }]}>
+          <Text style={[styles.initial, { fontSize }]}>{initial}</Text>
         </View>
       ))}
       {extra > 0 ? (
-        <View style={[styles.chip, styles.overlap]}>
-          <Text style={styles.moreText}>+{extra}</Text>
+        <View
+          style={[styles.circle, styles.overflow, circle, shown.length > 0 && { marginLeft: -overlap }]}
+        >
+          <Text style={[styles.overflowText, { fontSize: fontSize - 1 }]}>+{extra}</Text>
         </View>
       ) : null}
     </View>
@@ -34,17 +58,8 @@ export function AvatarStack({ initials, total, max = 2 }: Props) {
 
 const useStyles = makeStyles((colors) => ({
   row: { flexDirection: 'row', alignItems: 'center' },
-  chip: {
-    width: CHIP,
-    height: CHIP,
-    borderRadius: CHIP / 2,
-    backgroundColor: colors.accentTint,
-    borderWidth: 2,
-    borderColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  overlap: { marginLeft: -8 },
-  initial: { fontSize: 11, fontFamily: fonts.semibold, color: colors.text },
-  moreText: { fontSize: 10, fontFamily: fonts.medium, color: colors.textSecondary },
+  circle: { backgroundColor: colors.accentTint, alignItems: 'center', justifyContent: 'center' },
+  overflow: { backgroundColor: colors.surface },
+  initial: { fontFamily: fonts.semibold, color: colors.textAccent },
+  overflowText: { fontFamily: fonts.medium, color: colors.textSecondary },
 }));

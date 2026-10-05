@@ -55,14 +55,17 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
 
   const currency = expenses[0]?.currency ?? 'INR';
   const settled = Math.round(net) === 0;
-  const label = settled ? 'All settled up' : net > 0 ? 'You are owed' : 'You owe';
+  const owed = !settled && net > 0;
+  const label = settled ? 'All settled up' : owed ? 'You are owed' : 'You owe';
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.summary}>
           <Text style={styles.summaryLabel}>{label}</Text>
-          <Text style={styles.summaryAmount}>{formatMoney(net, currency)}</Text>
+          <Text style={[styles.summaryAmount, owed && styles.summaryAmountOwed]}>
+            {formatMoney(net, currency)}
+          </Text>
         </View>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -126,6 +129,7 @@ const useStyles = makeStyles((colors) => ({
   },
   summaryLabel: { fontSize: 14, fontFamily: fonts.regular, color: colors.textSecondary },
   summaryAmount: { marginTop: 4, fontSize: 32, fontFamily: fonts.bold, color: colors.text },
+  summaryAmountOwed: { color: colors.textSuccess },
   error: { marginBottom: spacing.md, fontSize: 13, fontFamily: fonts.regular, color: colors.danger },
   list: {},
   row: {
