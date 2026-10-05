@@ -91,9 +91,13 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
 
         <View style={styles.body}>
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <View style={styles.center}>
+              <ActivityIndicator color="#fff" />
+            </View>
           ) : error ? (
-            <Text style={styles.error}>{error}</Text>
+            <View style={styles.center}>
+              <Text style={styles.error}>{error}</Text>
+            </View>
           ) : url && isImage ? (
             <View style={styles.fill}>
               <Image
@@ -114,9 +118,12 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
               ) : null}
             </View>
           ) : pdfSource ? (
+            // The WebView wraps itself in a container that has flex but no width;
+            // containerStyle must stretch it or the PDF collapses to zero width.
             <WebView
               source={pdfSource}
-              style={styles.fill}
+              style={styles.web}
+              containerStyle={styles.fill}
               startInLoadingState
               renderLoading={() => (
                 <View style={styles.webLoading}>
@@ -124,6 +131,9 @@ export function AttachmentViewer({ attachment, onClose }: Props) {
                 </View>
               )}
               onError={() => setError('This file could not be displayed.')}
+              onHttpError={(e) =>
+                setError(`This file could not be loaded (HTTP ${e.nativeEvent.statusCode}).`)
+              }
             />
           ) : null}
         </View>
@@ -144,8 +154,10 @@ const styles = StyleSheet.create({
   },
   name: { flex: 1, color: '#fff', fontSize: 15, fontFamily: fonts.semibold },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 18 },
-  body: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  body: { flex: 1 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   fill: { flex: 1, width: '100%', backgroundColor: '#0e0b07' },
+  web: { flex: 1, backgroundColor: '#0e0b07' },
   image: { flex: 1, width: '100%' },
   webLoading: {
     position: 'absolute',
