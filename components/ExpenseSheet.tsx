@@ -237,7 +237,7 @@ export function ExpenseSheet({
     }
   };
 
-  // Grouped for the currency everywhere except while that field is being typed in.
+  // Formatted for the currency ("12.50") everywhere except while that field is being typed in.
   const shown = (raw: string, key: string) =>
     focus === key || !raw
       ? raw

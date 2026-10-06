@@ -169,33 +169,23 @@ export function sanitizeAmountInput(text: string, code: string): string {
 // Formatting
 // ============================================================
 
-/** Rupees use Indian digit grouping (12,00,000); everything else groups in thousands. */
-const LAKH_GROUPED = new Set(['INR']);
-
-function groupDigits(whole: string, code: string): string {
-  if (!LAKH_GROUPED.has(code)) return whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  const last3 = whole.slice(-3);
-  const rest = whole.slice(0, -3);
-  return rest ? `${rest.replace(/\B(?=(\d{2})+(?!\d))/g, ',')},${last3}` : last3;
-}
-
-/** "1,400", "12,00,000" (INR), "1,234.50" — minor digits only when present; JPY never has any. */
+/** "1400", "1234.50" — no digit grouping; minor digits only when present (JPY never has any). */
 export function formatAmount(amount: number, code = 'INR'): string {
-  const { code: iso, decimals } = getCurrency(code);
+  const { decimals } = getCurrency(code);
   const factor = 10 ** decimals;
   const minor = Math.round(Math.abs(amount) * factor);
-  const grouped = groupDigits(String(Math.floor(minor / factor)), iso);
+  const whole = String(Math.floor(minor / factor));
   const fraction = minor % factor;
-  return fraction ? `${grouped}.${String(fraction).padStart(decimals, '0')}` : grouped;
+  return fraction ? `${whole}.${String(fraction).padStart(decimals, '0')}` : whole;
 }
 
-/** Word-like symbols get a space ("Rs. 1,400", "CHF 50"); sign-like ones don't ("€450", "HK$20"). */
+/** Word-like symbols get a space ("Rs. 1400", "CHF 50"); sign-like ones don't ("€450", "HK$20"). */
 export function currencyPrefix(code: string): string {
   const { symbol } = getCurrency(code);
   return /[A-Za-z\u00C0-\u024F./]$/.test(symbol) ? `${symbol} ` : symbol;
 }
 
-/** Absolute amount with the currency's symbol: "€450", "Rs. 1,400", "¥3,000". */
+/** Absolute amount with the currency's symbol: "€450", "Rs. 1400", "¥3000". */
 export function formatMoney(amount: number, code = 'INR'): string {
   return currencyPrefix(code) + formatAmount(amount, code);
 }
