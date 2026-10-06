@@ -76,7 +76,7 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <BalanceCard balances={balances} />
+        <BalanceCard balances={balances} members={members} />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 

@@ -6,8 +6,9 @@
  * Token ↔ design-spec names: background = surface-2, surface = surface-1,
  * buttonFill = fill-primary, buttonText = on-primary, accentTint = bg-accent,
  * successFill = fill-success, navBackground = device/nav header band.
- * Green is reserved for positive money states (textSuccess) and the second
- * map location dot (successFill) — never for avatars.
+ * Balance amounts — and nothing else — use pos (money owed to you) and neg
+ * (money you owe). Green also marks the second map location dot (successFill),
+ * never avatars.
  */
 export type ColorScheme = 'light' | 'dark';
 
@@ -21,7 +22,8 @@ const light = {
   textSecondary: 'rgba(43,36,29,0.58)',
   textMuted: 'rgba(43,36,29,0.36)',
   textAccent: '#2b241d', // initials on bg-accent avatar circles
-  textSuccess: '#2b241d', // "You are owed" amount (stays primary text in light)
+  pos: '#3f7a4a', // balance amounts owed to you
+  neg: '#b2433a', // balance amounts you owe
   buttonFill: '#332a20', // fill-primary: buttons, FAB, pill, active dots, "now" border
   buttonText: '#fffdf8', // on-primary
   accentTint: '#f0e9dd', // bg-accent: "now" items, selected chips, invite code, avatars
@@ -52,7 +54,8 @@ const dark: ThemeColors = {
   textSecondary: 'rgba(245,239,230,0.72)',
   textMuted: 'rgba(245,239,230,0.48)',
   textAccent: '#f2d9bd',
-  textSuccess: '#b9d3a8',
+  pos: '#8fd19a',
+  neg: '#f2948a',
   buttonFill: '#efe3d1', // primary buttons become light cream…
   buttonText: '#15120f', // …with dark text
   accentTint: '#4a3c2e',

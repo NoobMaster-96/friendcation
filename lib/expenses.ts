@@ -60,37 +60,64 @@ export async function listSettlements(tripId: string): Promise<Settlement[]> {
   });
 }
 
-export type CurrencyBalance = { currency: string; netMinor: number };
+/** One person's net with you in one currency: positive = they owe you, negative = you owe them. */
+export type PersonBalance = { userId: string; netMinor: number };
+
+export type CurrencyBalance = {
+  currency: string;
+  /** Sum of `people`: positive = you are owed overall, negative = you owe. */
+  netMinor: number;
+  /** Everyone with a non-zero balance with you; the header's direction first, then largest. */
+  people: PersonBalance[];
+};
 
 /**
- * Your net position in each currency used on the trip (raw pairwise, per
- * handoff doc §2): positive = you are owed, negative = you owe. Currencies are
- * never mixed or converted, so an expense only moves its own currency's
- * balance. Settled (zero) currencies are left out; the currency of the newest
- * expense you're part of comes first.
+ * Your balances in each currency used on the trip, per person (raw pairwise, per
+ * handoff doc §2): for every expense, each member owes the payer their share.
+ * Currencies are never mixed or converted, so an expense only moves its own
+ * currency. Currencies where nobody has a balance with you are left out; the
+ * currency of the newest expense you're part of comes first.
  */
 export function balancesByCurrency(
   expenses: ExpenseListItem[],
   settlements: Settlement[],
   userId: string
 ): CurrencyBalance[] {
-  const net = new Map<string, number>();
-  const add = (currency: string, minor: number) =>
-    net.set(currency, (net.get(currency) ?? 0) + minor);
+  const byCurrency = new Map<string, Map<string, number>>();
+  const add = (currency: string, person: string, minor: number) => {
+    const people = byCurrency.get(currency) ?? new Map<string, number>();
+    people.set(person, (people.get(person) ?? 0) + minor);
+    byCurrency.set(currency, people);
+  };
 
   for (const e of expenses) {
+    if (!e.paid_by) continue;
     for (const s of e.splits) {
-      if (e.paid_by === userId && s.userId !== userId) add(e.currency, s.shareMinor); // others owe me
-      else if (e.paid_by !== userId && s.userId === userId) add(e.currency, -s.shareMinor); // I owe
+      if (e.paid_by === userId && s.userId !== userId) add(e.currency, s.userId, s.shareMinor); // they owe me
+      else if (e.paid_by !== userId && s.userId === userId) add(e.currency, e.paid_by, -s.shareMinor); // I owe the payer
     }
   }
   for (const s of settlements) {
-    if (s.paidBy === userId) add(s.currency, s.amountMinor); // I paid someone back
-    if (s.paidTo === userId) add(s.currency, -s.amountMinor); // someone paid me back
+    if (s.paidBy === userId && s.paidTo && s.paidTo !== userId) add(s.currency, s.paidTo, s.amountMinor); // I paid them back
+    if (s.paidTo === userId && s.paidBy && s.paidBy !== userId) add(s.currency, s.paidBy, -s.amountMinor); // they paid me back
   }
-  return [...net]
-    .filter(([, minor]) => minor !== 0)
-    .map(([currency, netMinor]) => ({ currency, netMinor }));
+
+  const result: CurrencyBalance[] = [];
+  for (const [currency, perPerson] of byCurrency) {
+    const people = [...perPerson]
+      .filter(([, minor]) => minor !== 0)
+      .map(([id, minor]) => ({ userId: id, netMinor: minor }));
+    if (people.length === 0) continue;
+    const netMinor = people.reduce((sum, p) => sum + p.netMinor, 0);
+    const lead = Math.sign(netMinor) || 1; // the header's direction (owes-you first when even)
+    people.sort(
+      (a, b) =>
+        Number(Math.sign(b.netMinor) === lead) - Number(Math.sign(a.netMinor) === lead) ||
+        Math.abs(b.netMinor) - Math.abs(a.netMinor)
+    );
+    result.push({ currency, netMinor, people });
+  }
+  return result;
 }
 
 // ============================================================
