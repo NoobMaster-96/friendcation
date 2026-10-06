@@ -3,20 +3,29 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-nati
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { computeNetBalance, formatMoney, listExpenses } from '../../lib/expenses';
+import {
+  balancesByCurrency,
+  listExpenses,
+  listSettlements,
+  type Settlement,
+} from '../../lib/expenses';
+import { formatMoney } from '../../lib/currencies';
+import { useAuth } from '../../context/AuthContext';
 import { listTripMembers, type TripMember } from '../../lib/members';
 import type { ExpenseListItem } from '../../lib/types';
 import { ExpenseSheet } from '../ExpenseSheet';
+import { BalanceCard } from './BalanceCard';
 import { makeStyles, useTheme } from '../../context/ThemeContext';
-import { fonts, radius, spacing } from '../../lib/theme';
+import { fonts, spacing } from '../../lib/theme';
 
 export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string }) {
   const { colors } = useTheme();
   const styles = useStyles();
   const insets = useSafeAreaInsets();
   const [expenses, setExpenses] = useState<ExpenseListItem[]>([]);
+  const { profile } = useAuth();
   const [members, setMembers] = useState<TripMember[]>([]);
-  const [net, setNet] = useState(0);
+  const [settlements, setSettlements] = useState<Settlement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -30,20 +39,20 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
   const load = useCallback(async () => {
     try {
       setError(null);
-      const [list, balance, memberList] = await Promise.all([
+      const [list, settled, memberList] = await Promise.all([
         listExpenses(tripId),
-        computeNetBalance(tripId, userId),
+        listSettlements(tripId),
         listTripMembers(tripId),
       ]);
       setExpenses(list);
-      setNet(balance);
+      setSettlements(settled);
       setMembers(memberList);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Could not load expenses.');
     } finally {
       setLoading(false);
     }
-  }, [tripId, userId]);
+  }, [tripId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -59,20 +68,15 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
     );
   }
 
-  const currency = expenses[0]?.currency ?? 'INR';
-  const settled = Math.round(net) === 0;
-  const owed = !settled && net > 0;
-  const label = settled ? 'All settled up' : owed ? 'You are owed' : 'You owe';
+  // Recomputed from the list, so a save only ever moves its own currency's balance.
+  const balances = balancesByCurrency(expenses, settlements, userId);
+  // New expenses start in the currency last used on this trip, else your home currency.
+  const defaultCurrency = expenses[0]?.currency ?? profile?.home_currency ?? 'INR';
 
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.summary}>
-          <Text style={styles.summaryLabel}>{label}</Text>
-          <Text style={[styles.summaryAmount, owed && styles.summaryAmountOwed]}>
-            {formatMoney(net, currency)}
-          </Text>
-        </View>
+        <BalanceCard balances={balances} />
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
@@ -122,6 +126,7 @@ export function ExpensesTab({ tripId, userId }: { tripId: string; userId: string
       <ExpenseSheet
         visible={sheetOpen}
         expense={sheetExpense}
+        defaultCurrency={defaultCurrency}
         tripId={tripId}
         userId={userId}
         members={members}
@@ -136,17 +141,6 @@ const useStyles = makeStyles((colors) => ({
   container: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: 120 },
-  summary: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.card,
-    paddingVertical: spacing.lg,
-    alignItems: 'center',
-    marginBottom: spacing.lg,
-  },
-  summaryLabel: { fontSize: 14, fontFamily: fonts.regular, color: colors.textSecondary },
-  summaryAmount: { marginTop: 4, fontSize: 32, fontFamily: fonts.bold, color: colors.text },
-  summaryAmountOwed: { color: colors.textSuccess },
   error: { marginBottom: spacing.md, fontSize: 13, fontFamily: fonts.regular, color: colors.danger },
   list: {},
   row: {

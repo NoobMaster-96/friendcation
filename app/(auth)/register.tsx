@@ -466,6 +466,8 @@ const useStyles = makeStyles((colors) => ({
     fontSize: 14,
     fontFamily: fonts.regular,
     color: colors.text,
+    // Explicit 0: iOS reuses native inputs and can otherwise keep another input's spacing.
+    letterSpacing: 0,
   },
   inputCode: {
     textAlign: 'center',

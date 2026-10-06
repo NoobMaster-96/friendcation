@@ -22,7 +22,7 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 const PROFILE_COLUMNS =
-  'id, first_name, last_name, email, avatar_url, referral_code, referred_by, created_at';
+  'id, first_name, last_name, email, avatar_url, referral_code, referred_by, home_currency, created_at';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);

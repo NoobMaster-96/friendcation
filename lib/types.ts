@@ -6,6 +6,8 @@ export type UserProfile = {
   avatar_url: string | null;
   referral_code: string;
   referred_by: string | null;
+  /** ISO 4217 — the default currency for a trip's first expense (migration 0011). */
+  home_currency: string;
   created_at: string;
 };
 
@@ -53,8 +55,8 @@ export type ExpenseListItem = {
   paid_by: string | null;
   payerName: string | null;
   expense_date: string | null;
-  /** Each member's share, in integer paise. */
-  splits: { userId: string; sharePaise: number }[];
+  /** Each member's share, in integer minor units of `currency` (paise, cents…). */
+  splits: { userId: string; shareMinor: number }[];
 };
 
 export type MemberLocation = {

@@ -19,6 +19,7 @@ Run these against your Supabase project **in order**:
 | `migrations/0008_enable_rls.sql` | **Row Level Security** for every table, membership helpers, and the `join_trip_by_code` / `add_trip_member_by_email` RPCs | **Before any real user** |
 | `migrations/0009_expenses_editable_by_members.sql` | Any trip member can edit/delete expenses and splits; atomic `save_expense()` RPC | After 0008 |
 | `migrations/0010_invite_codes.sql` | Invite-code checks for the invite-first Create account flow: each user's 6-character referral code gets an optional use limit + expiry (`invite_codes`), `verify_invite_code()` for step 1, and the signup trigger validates and consumes the invite | After 0008 |
+| `migrations/0011_multi_currency.sql` | Multi-currency expenses: required ISO `currency` on expenses and settlements, wider amount columns for high-denomination currencies, `user_profiles.home_currency`, and `save_expense(…, p_currency)` | After 0009 |
 
 ### How to apply
 

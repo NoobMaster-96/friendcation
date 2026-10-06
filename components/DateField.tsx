@@ -134,7 +134,15 @@ const useStyles = makeStyles((colors) => ({
   },
   fieldFocused: { borderColor: colors.borderStrong },
   fieldError: { borderColor: colors.danger },
-  input: { flex: 1, fontSize: 17, fontFamily: fonts.regular, color: colors.text, paddingVertical: 0 },
+  // letterSpacing 0: iOS reuses native inputs and can otherwise keep another input's spacing.
+  input: {
+    flex: 1,
+    fontSize: 17,
+    fontFamily: fonts.regular,
+    letterSpacing: 0,
+    color: colors.text,
+    paddingVertical: 0,
+  },
   iconBtn: { paddingLeft: 8 },
   error: { marginTop: 6, fontSize: 13, fontFamily: fonts.regular, color: colors.danger },
   pickerRoot: { flex: 1, justifyContent: 'flex-end' },
