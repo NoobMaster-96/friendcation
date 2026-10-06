@@ -29,7 +29,7 @@ cp .env.example .env   # then fill in your Supabase URL + anon key
 ### Apply the database schema
 
 Run the SQL in `supabase/migrations/` against your Supabase project **in order**
-(0001 → 0008). See [`supabase/README.md`](supabase/README.md) for details.
+(0001 → 0010). See [`supabase/README.md`](supabase/README.md) for details.
 
 > ⚠️ **RLS is a hard gate.** `0008_enable_rls.sql` enables Row Level
 > Security. It **must** be applied before any real friend uses the app — without it,

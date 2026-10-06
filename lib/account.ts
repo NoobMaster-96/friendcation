@@ -26,3 +26,39 @@ export async function isEmailAvailable(email: string): Promise<boolean> {
   if (error) return true;
   return (data?.length ?? 0) === 0;
 }
+
+// ============================================================
+// Invite codes — each user's 6-character code (checks: migration 0010)
+// ============================================================
+
+export const INVITE_CODE_PATTERN = /^[A-Z0-9]{6}$/;
+
+export type InviteCheck =
+  | { valid: true; code: string; inviterFirstName: string }
+  | { valid: false; reason: 'not_found' | 'expired' | 'used_up' };
+
+/** As-you-type: uppercase, letters and digits only, at most 6 (" 4f9a-2c" → "4F9A2C"). */
+export function formatInviteCode(raw: string): string {
+  return raw.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+}
+
+export function inviteErrorMessage(reason: 'not_found' | 'expired' | 'used_up'): string {
+  switch (reason) {
+    case 'expired':
+      return 'This invite code has expired. Ask your friend for a new one.';
+    case 'used_up':
+      return 'This invite code has already been used.';
+    default:
+      return 'We couldn’t find that invite code. Check it and try again.';
+  }
+}
+
+/** Step 1 of Create account: does the code exist, and is it unexpired with uses left? */
+export async function verifyInviteCode(code: string): Promise<InviteCheck> {
+  const { data, error } = await supabase.rpc('verify_invite_code', { p_code: code });
+  if (error) throw error;
+  if (data?.valid) {
+    return { valid: true, code: data.code, inviterFirstName: data.inviter_first_name ?? 'a friend' };
+  }
+  return { valid: false, reason: data?.reason ?? 'not_found' };
+}
